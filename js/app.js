@@ -872,6 +872,12 @@ function tpGetZoneFromTouch(touch) {
   return Math.min(3, Math.floor(clamped / zoneHeight));
 }
 
+function tpIsInsideSurface(e) {
+  const rect = $('tp-surface').getBoundingClientRect();
+  return e.clientX >= rect.left && e.clientX <= rect.right &&
+         e.clientY >= rect.top  && e.clientY <= rect.bottom;
+}
+
 $('tp-surface').addEventListener('pointerdown', e => {
   if (state.answered || tpLocked) return;
   e.preventDefault();
@@ -886,6 +892,10 @@ $('tp-surface').addEventListener('pointermove', e => {
   if (state.answered || tpLocked) return;
   if (!$('tp-surface').classList.contains('touching')) return;
   e.preventDefault();
+  if (!tpIsInsideSurface(e)) {
+    tpClearHighlight();
+    return;
+  }
   const zone = tpGetZoneFromTouch(e);
   tpHighlightZone(zone);
 });
@@ -893,9 +903,10 @@ $('tp-surface').addEventListener('pointermove', e => {
 $('tp-surface').addEventListener('pointerup', e => {
   if (!$('tp-surface').classList.contains('touching')) return;
   $('tp-surface').classList.remove('touching');
+  const inside = tpIsInsideSurface(e);
   const zone = tpCurrentZone;
   tpClearHighlight();
-  if (zone >= 0 && !state.answered) {
+  if (inside && zone >= 0 && !state.answered) {
     selectOption(zone);
   }
 });
