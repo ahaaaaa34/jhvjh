@@ -227,52 +227,26 @@
     .trackpad {
       position: fixed; left: 0; right: 0; z-index: 15;
       bottom: 0;
-      padding: 0 12px calc(8px + env(safe-area-inset-bottom)) 12px;
-      background: linear-gradient(to top, rgba(246,246,244,.97) 70%, rgba(246,246,244,0));
+      padding: 0 16px calc(10px + env(safe-area-inset-bottom)) 16px;
+      background: linear-gradient(to top, rgba(246,246,244,.98) 80%, rgba(246,246,244,0));
       pointer-events: none;
     }
     .trackpad.active { pointer-events: auto; }
     .trackpad-surface {
-      position: relative;
-      width: 100%; height: 64px;
+      width: 100%; height: 140px;
       border-radius: 16px;
-      background: var(--card);
-      border: 2px solid var(--br);
-      box-shadow: 0 2px 12px rgba(0,0,0,.08);
-      display: flex; align-items: center; justify-content: center;
-      gap: 0;
-      overflow: hidden;
+      background: #e8e8e6;
+      border: 1px solid #d0d0ce;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.05);
       touch-action: none;
       -webkit-user-select: none; user-select: none;
       cursor: pointer;
+      transition: border-color .15s, box-shadow .15s;
     }
     .trackpad-surface.touching {
-      border-color: var(--p);
-      box-shadow: 0 2px 16px rgba(0,0,0,.15);
-    }
-    /* 4 zone indicators inside the pad */
-    .tp-zone {
-      flex: 1; height: 100%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: 700; color: var(--mu);
-      transition: background .08s, color .08s;
-      position: relative;
-    }
-    .tp-zone:not(:last-child)::after {
-      content: ''; position: absolute; right: 0; top: 20%; height: 60%;
-      width: 1px; background: var(--br); opacity: .5;
-    }
-    .tp-zone.hover {
-      background: var(--pl); color: var(--tx);
-    }
-    .tp-zone.locked-correct {
-      background: var(--ok); color: #fff;
-    }
-    .tp-zone.locked-wrong {
-      background: var(--ng); color: #fff;
-    }
-    .tp-zone.locked-dim {
-      opacity: .3;
+      background: #e2e2e0;
+      border-color: #aaa;
+      box-shadow: inset 0 1px 4px rgba(0,0,0,.1), 0 1px 6px rgba(0,0,0,.1);
     }
     .trackpad-hint {
       text-align: center; font-size: 10px; color: var(--mu);
@@ -281,19 +255,8 @@
     }
     .trackpad-hint.hidden { opacity: 0; }
     /* パッド表示中は下が隠れないように余白を確保 */
-    .quiz-body.pad-on { padding-bottom: 140px; }
+    .quiz-body.pad-on { padding-bottom: 210px; }
 
-    /* 回答した選択肢：もう一度タップで次へ */
-    .opt-btn.tap-next { position: relative; cursor: pointer; }
-    .opt-btn.tap-next::after {
-      content: 'タップで次へ →';
-      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
-      font-size: 11px; font-weight: 700; color: var(--mu);
-      background: var(--card); padding: 3px 8px; border-radius: 20px;
-      border: 1px solid var(--br); animation: fadeUp .3s ease;
-    }
-    .opt-btn.correct.tap-next::after { color: var(--ok); border-color: var(--ok); }
-    .opt-btn.wrong.tap-next::after   { color: var(--ng); border-color: var(--ng); }
     /* 選択肢のトラックパッドハイライト */
     .opt-btn.tp-highlight {
       border-color: var(--p); background: var(--pl);
@@ -347,7 +310,20 @@
       transition: background .12s, transform .1s;
     }
     .next-btn.show { display: block; animation: fadeUp .25s ease; }
+    /* 選択問題の回答後は下部固定 */
+    .next-btn.show.fixed-bottom {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 16;
+      margin: 0; border-radius: 0;
+      padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
+      box-shadow: 0 -2px 12px rgba(0,0,0,.12);
+      animation: slideUpIn .25s ease;
+    }
+    @keyframes slideUpIn {
+      from { transform: translateY(100%); }
+      to   { transform: translateY(0); }
+    }
     .next-btn:active { transform: scale(.98); }
+    .next-btn.fixed-bottom:active { transform: none; opacity: .9; }
     .next-btn:hover { background: var(--pd); }
 
     /* Prev question button (戻る) */
@@ -839,12 +815,7 @@
 
   <!-- トラックパッド（選択問題用） -->
   <div class="trackpad" id="ans-pad" style="display:none">
-    <div class="trackpad-surface" id="tp-surface">
-      <div class="tp-zone" data-i="0">①</div>
-      <div class="tp-zone" data-i="1">②</div>
-      <div class="tp-zone" data-i="2">③</div>
-      <div class="tp-zone" data-i="3">④</div>
-    </div>
+    <div class="trackpad-surface" id="tp-surface"></div>
     <div class="trackpad-hint" id="tp-hint">スライドで選択 · 離して決定</div>
   </div>
 </div>
