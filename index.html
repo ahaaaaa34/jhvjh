@@ -431,6 +431,8 @@
     }
     .exb-input-field:focus { border-color: var(--p); }
     .exb-input-field:disabled { opacity: .6; background: var(--bg); }
+    #fill-zone .exb-input-field { margin: 12px 0 10px; }
+    #fill-zone .exb-reveal-btn { margin-top: 8px; }
     .exb-num-result {
       font-size: 15px; font-weight: 700; padding: 10px 14px;
       border-radius: 10px; margin-bottom: 14px; text-align: center;
@@ -744,6 +746,16 @@
       <button class="check-btn" id="check-btn" disabled>確認する</button>
     </div>
 
+    <!-- Fill zone (言い換え・空所補充：記述式) -->
+    <div id="fill-zone" style="display:none">
+      <div class="exc-context" id="fill-ctx"></div>
+      <input id="fill-input" class="exb-input-field" type="text"
+        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
+        placeholder="空所に入る語を入力...">
+      <button class="check-btn" id="fill-check-btn" disabled>確認する</button>
+      <button class="exb-reveal-btn" id="fill-reveal-btn">答えを見る</button>
+    </div>
+
     <!-- Feedback (choice & exB) -->
     <div class="fb-card" id="fb-card">
       <div class="fb-head"      id="fb-head"></div>
@@ -793,7 +805,7 @@
 </div>
 
 
-<script src="js/data.js?v=11"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/data.js?v=12"></script>
+<script src="js/app.js?v=23"></script>
 </body>
 </html>

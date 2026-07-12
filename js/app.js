@@ -242,9 +242,10 @@ function renderQ() {
   $('q-important').style.display = q.important ? 'inline-block' : 'none';
 
   $('opts').innerHTML = '';
-  $('opts').style.display     = 'none';
-  $('exb-zone').style.display = 'none';
-  $('exc-zone').style.display = 'none';
+  $('opts').style.display      = 'none';
+  $('exb-zone').style.display  = 'none';
+  $('exc-zone').style.display  = 'none';
+  $('fill-zone').style.display = 'none';
   $('fb-card').className = 'fb-card';
   $('next-btn').className = 'next-btn';
   $('q-ja').style.display = 'none';
@@ -256,6 +257,8 @@ function renderQ() {
     renderExBQ(q);
   } else if (q.type === 'exC') {
     renderExCQ(q);
+  } else if (q.type === 'fill') {
+    renderFillQ(q);
   } else {
     $('opts').style.display = '';
     renderChoiceQ(q);
@@ -692,10 +695,69 @@ function replayExC(q, rec) {
 
 function replayRecord(q, rec) {
   state.answered = true;
-  if (rec.kind === 'exB')      replayExB(q, rec);
-  else if (rec.kind === 'exC') replayExC(q, rec);
-  else                         replayChoice(q, rec);
+  if (rec.kind === 'exB')       replayExB(q, rec);
+  else if (rec.kind === 'exC')  replayExC(q, rec);
+  else if (rec.kind === 'fill') replayFill(q, rec);
+  else                          replayChoice(q, rec);
 }
+
+/* ── Fill (言い換え・空所補充：記述式) ── */
+function renderFillQ(q) {
+  $('q-text').innerHTML = q.japanese || '空所に適切な語を入れなさい。';
+  $('fill-zone').style.display = '';
+
+  let ctx = '';
+  if (q.prefix) ctx += `${q.prefix} `;
+  ctx += q.words.map(() => '<span class="ctx-blank">（　　　　）</span>').join(' ');
+  if (q.suffix) ctx += /^[.,?!]/.test(q.suffix) ? q.suffix : ` ${q.suffix}`;
+  $('fill-ctx').innerHTML = ctx;
+
+  $('fill-input').value = '';
+  $('fill-input').disabled = false;
+  $('fill-check-btn').disabled = true;
+  $('fill-check-btn').style.display = '';
+  $('fill-reveal-btn').style.display = '';
+}
+
+function replayFill(q, rec) {
+  $('fill-input').value = rec.typed || '';
+  $('fill-input').disabled = true;
+  $('fill-check-btn').style.display = 'none';
+  $('fill-reveal-btn').style.display = 'none';
+  showFeedback({
+    isOK:          rec.isOK,
+    headText:      rec.revealed ? '答え' : rec.isOK ? '✓ 正解！' : '✗ 不正解',
+    fixText:       q.answer,
+    correctedText: q.words.join(' '),
+    traText:       q.translation ? `[訳] ${q.translation}` : null,
+    expText:       q.explanation
+  });
+}
+
+function resolveFill(revealed) {
+  if (state.answered) return;
+  state.answered = true;
+
+  const q        = state.queue[state.idx];
+  const typed    = $('fill-input').value.trim();
+  const expected = q.words.join(' ');
+  const isOK     = !revealed && normalize(typed) === normalize(expected);
+
+  const rec = recordResult(q, 'fill', isOK, { typed, revealed });
+  replayFill(q, rec);
+}
+
+$('fill-input').addEventListener('input', () => {
+  if (!state.answered) $('fill-check-btn').disabled = $('fill-input').value.trim().length === 0;
+});
+$('fill-input').addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.isComposing) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (!state.answered && !$('fill-check-btn').disabled) $('fill-check-btn').click();
+});
+$('fill-check-btn').addEventListener('click', () => resolveFill(false));
+$('fill-reveal-btn').addEventListener('click', () => resolveFill(true));
 
 /* ── Shared feedback ── */
 function showFeedback({ isOK, headText, fixText, correctedText, traText, expText }) {
@@ -778,7 +840,8 @@ $('prev-q-btn').addEventListener('click', () => {
 
 /* ── 問題一覧プルダウン ── */
 function qListText(q) {
-  if (q.type === 'exC') return q.japanese || q.translation || q.answer || '並べかえ問題';
+  if (q.type === 'exC' || q.type === 'fill')
+    return (q.japanese || q.translation || q.answer || '並べかえ問題').replace(/<br\s*\/?>/g, ' ');
   // choice / exB: 本文（①②③④の記号は除去）
   return (q.question || '').replace(/[①②③④]/g, '').replace(/\(\s*\)/g, '(　)').trim();
 }
@@ -843,6 +906,8 @@ function giveUp() {
   const q = state.queue[state.idx];
   if (q.type === 'exB') {
     $('exb-reveal-btn').click();
+  } else if (q.type === 'fill') {
+    resolveFill(true);
   } else if (q.type === 'exC') {
     state.answered = true;
     $('check-btn').disabled = true;
@@ -861,6 +926,7 @@ document.addEventListener('keydown', e => {
   if (!$('screen-quiz').classList.contains('active')) return;
   if ($('qlist-panel').classList.contains('show')) return; // 一覧表示中は無効
   if (document.activeElement === $('exb-input')) return; // 入力中はExBの確認に任せる
+  if (document.activeElement === $('fill-input') && !state.answered) return; // 記述式の入力中も同様
   e.preventDefault();
   if (state.answered) {
     if ($('next-btn').classList.contains('show')) $('next-btn').click();
