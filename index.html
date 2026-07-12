@@ -223,6 +223,28 @@
     .opt-btn.correct .opt-num { background: var(--ok); color: #fff; }
     .opt-btn.wrong { border-color: var(--ng); background: var(--ng-bg); }
     .opt-btn.wrong .opt-num { background: var(--ng); color: #fff; }
+    /* 画面下の回答パッド（選択問題用） */
+    .ans-pad {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 15;
+      display: flex; gap: 10px;
+      padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+      background: var(--card); border-top: 1px solid var(--br);
+      box-shadow: 0 -4px 16px rgba(0,0,0,.08);
+    }
+    .ans-pad-btn {
+      flex: 1; padding: 14px 0; border-radius: var(--r);
+      border: 2px solid var(--br); background: var(--bg); color: var(--tx);
+      font-size: 20px; font-weight: 700; cursor: pointer; font-family: inherit;
+      transition: background .1s, border-color .1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ans-pad-btn:active:not(:disabled) { background: var(--pl); border-color: var(--p); }
+    .ans-pad-btn:disabled { opacity: .35; }
+    .ans-pad-btn.correct { background: var(--ok); border-color: var(--ok); color: #fff; opacity: 1; }
+    .ans-pad-btn.wrong   { background: var(--ng); border-color: var(--ng); color: #fff; opacity: 1; }
+    /* パッド表示中は下が隠れないように余白を確保 */
+    .quiz-body.pad-on { padding-bottom: 96px; }
+
     /* 回答した選択肢：もう一度タップで次へ */
     .opt-btn.tap-next { position: relative; cursor: pointer; }
     .opt-btn.tap-next::after {
@@ -768,6 +790,14 @@
     <button class="next-btn" id="next-btn">次の問題 →</button>
     <button class="prev-q-btn" id="prev-q-btn" style="display:none">← 前の問題に戻る</button>
   </div>
+
+  <!-- 画面下の回答パッド（選択問題用） -->
+  <div class="ans-pad" id="ans-pad" style="display:none">
+    <button class="ans-pad-btn" data-i="0">①</button>
+    <button class="ans-pad-btn" data-i="1">②</button>
+    <button class="ans-pad-btn" data-i="2">③</button>
+    <button class="ans-pad-btn" data-i="3">④</button>
+  </div>
 </div>
 
 <!-- ════ RESULTS ════ -->
@@ -806,6 +836,6 @@
 
 
 <script src="js/data.js?v=12"></script>
-<script src="js/app.js?v=23"></script>
+<script src="js/app.js?v=24"></script>
 </body>
 </html>

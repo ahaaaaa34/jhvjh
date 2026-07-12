@@ -253,6 +253,14 @@ function renderQ() {
 
   $('prev-q-btn').style.display = state.idx > 0 ? '' : 'none';
 
+  const isChoice = q.type !== 'exB' && q.type !== 'exC' && q.type !== 'fill';
+  $('ans-pad').style.display = isChoice ? '' : 'none';
+  document.querySelector('.quiz-body').classList.toggle('pad-on', isChoice);
+  $('ans-pad').querySelectorAll('.ans-pad-btn').forEach(b => {
+    b.disabled = false;
+    b.classList.remove('correct', 'wrong');
+  });
+
   if (q.type === 'exB') {
     renderExBQ(q);
   } else if (q.type === 'exC') {
@@ -640,6 +648,12 @@ function replayChoice(q, rec) {
     if (i === rec.chosen) { btn.disabled = false; btn.classList.add('tap-next'); }
     else                    btn.disabled = true;
   });
+  // 下の回答パッドも同じ状態に同期
+  $('ans-pad').querySelectorAll('.ans-pad-btn').forEach((btn, i) => {
+    if (i === q.answer)        btn.classList.add('correct');
+    else if (i === rec.chosen) btn.classList.add('wrong');
+    btn.disabled = i !== rec.chosen;
+  });
   showFeedback({
     isOK:     rec.isOK,
     headText: rec.chosen === -1 ? `答え: ${NUMS[q.answer]}`
@@ -829,6 +843,11 @@ function advanceNext() {
 }
 
 $('next-btn').addEventListener('click', advanceNext);
+
+/* ── 画面下の回答パッド（選択問題用） ── */
+$('ans-pad').querySelectorAll('.ans-pad-btn').forEach(btn => {
+  btn.addEventListener('click', () => selectOption(parseInt(btn.dataset.i)));
+});
 
 /* ── Prev (前の問題へ。間違えた記録は保持したまま) ── */
 $('prev-q-btn').addEventListener('click', () => {
