@@ -256,10 +256,17 @@ function renderQ() {
   const isChoice = q.type !== 'exB' && q.type !== 'exC' && q.type !== 'fill';
   $('ans-pad').style.display = isChoice ? '' : 'none';
   document.querySelector('.quiz-body').classList.toggle('pad-on', isChoice);
-  $('ans-pad').querySelectorAll('.ans-pad-btn').forEach(b => {
-    b.disabled = false;
-    b.classList.remove('correct', 'wrong');
+  $('ans-pad').querySelectorAll('.tp-zone').forEach(z => {
+    z.classList.remove('hover', 'locked-correct', 'locked-wrong', 'locked-dim');
   });
+  $('ans-pad').classList.remove('active');
+  tpLocked = false;
+  if (isChoice) {
+    $('ans-pad').classList.add('active');
+    $('tp-hint').textContent = 'スライドで選択 · 離して決定';
+    $('tp-hint').classList.remove('hidden');
+    $('tp-surface').classList.remove('touching');
+  }
 
   if (q.type === 'exB') {
     renderExBQ(q);
@@ -648,11 +655,15 @@ function replayChoice(q, rec) {
     if (i === rec.chosen) { btn.disabled = false; btn.classList.add('tap-next'); }
     else                    btn.disabled = true;
   });
-  // 下の回答パッドも同じ状態に同期
-  $('ans-pad').querySelectorAll('.ans-pad-btn').forEach((btn, i) => {
-    if (i === q.answer)        btn.classList.add('correct');
-    else if (i === rec.chosen) btn.classList.add('wrong');
-    btn.disabled = i !== rec.chosen;
+  // 下のトラックパッドも同じ状態に同期
+  tpLocked = true;
+  $('tp-hint').textContent = 'タップで次へ';
+  $('tp-hint').classList.remove('hidden');
+  $('ans-pad').querySelectorAll('.tp-zone').forEach((zone, i) => {
+    zone.classList.remove('hover');
+    if (i === q.answer)        zone.classList.add('locked-correct');
+    else if (i === rec.chosen) zone.classList.add('locked-wrong');
+    else                       zone.classList.add('locked-dim');
   });
   showFeedback({
     isOK:     rec.isOK,
@@ -844,9 +855,82 @@ function advanceNext() {
 
 $('next-btn').addEventListener('click', advanceNext);
 
-/* ── 画面下の回答パッド（選択問題用） ── */
-$('ans-pad').querySelectorAll('.ans-pad-btn').forEach(btn => {
-  btn.addEventListener('click', () => selectOption(parseInt(btn.dataset.i)));
+/* ── 画面下のトラックパッド（選択問題用） ── */
+let tpLocked = false;
+let tpCurrentZone = -1;
+
+function tpHighlightZone(idx) {
+  if (tpCurrentZone === idx) return;
+  tpCurrentZone = idx;
+  // パッド内ゾーン
+  $('ans-pad').querySelectorAll('.tp-zone').forEach((z, i) => {
+    z.classList.toggle('hover', i === idx);
+  });
+  // 上の選択肢
+  $('opts').querySelectorAll('.opt-btn').forEach((btn, i) => {
+    btn.classList.toggle('tp-highlight', i === idx);
+  });
+  // ハプティクス（初回ホバーのみ）
+  if (idx >= 0 && navigator.vibrate) navigator.vibrate(8);
+}
+
+function tpClearHighlight() {
+  tpCurrentZone = -1;
+  $('ans-pad').querySelectorAll('.tp-zone').forEach(z => z.classList.remove('hover'));
+  $('opts').querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('tp-highlight'));
+}
+
+function tpGetZoneFromTouch(touch) {
+  const surface = $('tp-surface');
+  const rect = surface.getBoundingClientRect();
+  const x = touch.clientX - rect.left;
+  if (x < 0 || x > rect.width) return -1;
+  const zoneWidth = rect.width / 4;
+  return Math.min(3, Math.floor(x / zoneWidth));
+}
+
+// 回答済みの場合、トラックパッドをタップ→次の問題へ
+function tpHandleAnsweredTap() {
+  if (state.answered) advanceNext();
+}
+
+$('tp-surface').addEventListener('pointerdown', e => {
+  if (tpLocked) {
+    // 回答済みの場合はタップで次へ
+    tpHandleAnsweredTap();
+    return;
+  }
+  if (state.answered) return;
+  e.preventDefault();
+  $('tp-surface').setPointerCapture(e.pointerId);
+  $('tp-surface').classList.add('touching');
+  $('tp-hint').classList.add('hidden');
+  const zone = tpGetZoneFromTouch(e);
+  tpHighlightZone(zone);
+});
+
+$('tp-surface').addEventListener('pointermove', e => {
+  if (tpLocked || state.answered) return;
+  if (!$('tp-surface').classList.contains('touching')) return;
+  e.preventDefault();
+  const zone = tpGetZoneFromTouch(e);
+  tpHighlightZone(zone);
+});
+
+$('tp-surface').addEventListener('pointerup', e => {
+  if (tpLocked) return;
+  if (!$('tp-surface').classList.contains('touching')) return;
+  $('tp-surface').classList.remove('touching');
+  const zone = tpCurrentZone;
+  tpClearHighlight();
+  if (zone >= 0 && !state.answered) {
+    selectOption(zone);
+  }
+});
+
+$('tp-surface').addEventListener('pointercancel', () => {
+  $('tp-surface').classList.remove('touching');
+  if (!tpLocked) tpClearHighlight();
 });
 
 /* ── Prev (前の問題へ。間違えた記録は保持したまま) ── */
