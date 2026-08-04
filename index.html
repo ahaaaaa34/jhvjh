@@ -126,8 +126,8 @@ sup{vertical-align:.5em} sub{vertical-align:-.28em}
 /* ---------- 右のアイコン列 ---------- */
 .rail{
   position:absolute; right:6px; z-index:2;
-  bottom:calc(var(--navH) + var(--safeB) + 18px);
-  display:flex; flex-direction:column; align-items:center; gap:17px;
+  bottom:calc(var(--navH) + var(--safeB) + 8px);
+  display:flex; flex-direction:column; align-items:center; gap:13px;
 }
 .rail .ri{display:flex; flex-direction:column; align-items:center; gap:4px}
 .rail .ri svg{width:31px; height:31px; fill:#fff; filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
@@ -136,7 +136,7 @@ sup{vertical-align:.5em} sub{vertical-align:-.28em}
 .rail .ri.on.cy svg{fill:var(--ok)}
 .rail .ri:active{transform:scale(.9)}
 /* 範囲バッジ（TikTok のアイコン写真の場所） */
-.ava{position:relative; width:44px; height:44px; margin-bottom:2px}
+.ava{position:relative; width:44px; height:44px; margin-bottom:6px}
 .ava .ph{
   position:absolute; inset:0; border-radius:50%; border:1.5px solid #fff; background:#111;
   display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1.15;
@@ -376,7 +376,7 @@ body.writing #padLayer{pointer-events:auto}
 /* 書いている間は、問題文と右の列を道具の列のぶんだけ持ち上げる */
 .card,.rail{transition:padding-bottom .18s, bottom .18s}
 body.writing .card{padding-bottom:calc(var(--navH) + var(--safeB) + var(--toolH) + 14px)}
-body.writing .rail{bottom:calc(var(--navH) + var(--safeB) + var(--toolH) + 18px)}
+body.writing .rail{bottom:calc(var(--navH) + var(--safeB) + var(--toolH) + 8px)}
 body.writing .void,
 body.knows-write .void{opacity:0}
 #tools{
