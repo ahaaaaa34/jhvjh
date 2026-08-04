@@ -1,861 +1,1656 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#1a1a1a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="不定詞と動名詞マスター">
-  <title>英文法マスター STEP 04・05・06</title>
-  <link rel="manifest" href="manifest.json">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box; margin: 0; padding: 0;
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-    }
-    :root {
-      --p: #1a1a1a; --pd: #000; --pl: #f0f0f0;
-      --ok: #133463; --ok-bg: #e9edf6;
-      --ng: #b60033; --ng-bg: #fbe9ed;
-      --bg: #f6f6f4; --card: #fff;
-      --tx: #1a1a1a; --mu: #777; --br: #ddd;
-      --r: 6px;
-    }
-    html, body { min-height: 100%; background: var(--bg); color: var(--tx); line-height: 1.7; font-family: 'Shippori Mincho', 'Hiragino Mincho ProN', 'Yu Mincho', serif; }
-    .screen { display: none; min-height: 100vh; }
-    .screen.active { display: block; }
+<meta charset="utf-8">
+<title>指数・対数フィード</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#000000">
+<meta name="description" content="指数・対数の問題を、縦にスクロールしながら1問ずつ解いていくアプリ。">
+<link rel="manifest" href="./manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="指数対数フィード">
+<link rel="apple-touch-icon" href="./icon-apple.png">
+<link rel="icon" href="./icon-192.png">
+<style>
+:root{
+  --bg:#000;
+  --t1:#fff;
+  --t2:rgba(255,255,255,.72);
+  --t3:rgba(255,255,255,.45);
+  --line:rgba(255,255,255,.14);
+  --sheet:#1b1b1d;
+  --sheet2:#242427;
+  --ok:#25F4EE;          /* 正解＝シアン */
+  --ng:#FE2C55;          /* 不正解＝レッド */
+  --safeT:env(safe-area-inset-top,0px);
+  --safeB:env(safe-area-inset-bottom,0px);
+  --navH:50px;
+  --topH:44px;
+  --toolH:54px;
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+html,body{height:100%; margin:0; overflow:hidden; background:var(--bg)}
+body{
+  color:var(--t1);
+  font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",Meiryo,system-ui,-apple-system,sans-serif;
+  font-feature-settings:"palt" 1;
+  -webkit-font-smoothing:antialiased;
+  line-height:1.55; font-size:15px;
+  overscroll-behavior:none;
+}
+button{font-family:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; touch-action:manipulation}
+.hide{display:none !important}
 
-    /* ── HOME ── */
-    .home-hero {
-      background: #1a1a1a;
-      color: #fff; text-align: center;
-      padding: 52px 24px 36px;
-    }
-    .home-hero h1 { font-size: 26px; font-weight: 800; margin-bottom: 6px; letter-spacing: .5px; }
-    .home-hero p  { font-size: 13px; opacity: .85; }
-    .home-body { max-width: 480px; margin: 0 auto; padding: 22px 16px 48px; }
+/* ---------- 数式表示（本編アプリと同じ組み方） ---------- */
+.mq{font-family:"Times New Roman",'Hiragino Mincho ProN',serif; letter-spacing:.01em}
+sup,sub{font-size:.68em; line-height:0}
+sup{vertical-align:.5em} sub{vertical-align:-.28em}
+.rt{white-space:nowrap}
+.rt .ri{font-size:.6em; vertical-align:.62em; margin-right:-.28em}
+.rt .rb{border-top:1px solid currentColor; padding:0 .14em 0 .06em; margin-left:.02em}
+.fr{display:inline-flex; flex-direction:column; align-items:center; vertical-align:middle;
+    margin:0 .14em; line-height:1.12; position:relative; top:-.08em}
+.fr .fn{font-size:.82em; padding:0 .2em}
+.fr .fd{font-size:.82em; padding:0 .2em; border-top:1px solid currentColor; margin-top:.08em}
+.bx{display:inline-block; min-width:.72em; padding:0 .06em; border:1px dashed var(--ng);
+    border-radius:3px; color:var(--ng); line-height:1.15; text-align:center}
 
-    .sec-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--mu); margin-bottom: 10px; margin-top: 0; }
-    .sec-lbl.mt { margin-top: 22px; }
-    .topic-row { display: flex; gap: 10px; margin-bottom: 4px; }
-    .topic-btn {
-      flex: 1; padding: 14px 10px; border-radius: var(--r);
-      border: 2px solid var(--br); background: var(--card); color: var(--tx);
-      font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer;
-      transition: border-color .15s, background .15s, color .15s; user-select: none;
-    }
-    .topic-btn .topic-sub { display: block; font-size: 11px; font-weight: 500; color: var(--mu); margin-top: 2px; }
-    .topic-btn.on { background: var(--dark, #1a1a1a); border-color: var(--dark, #1a1a1a); color: #fff; }
-    .topic-btn.on .topic-sub { color: rgba(255,255,255,.75); }
-    .sec-card {
-      background: var(--card); border-radius: var(--r); padding: 14px 16px;
-      margin-bottom: 10px; display: flex; align-items: center; gap: 14px;
-      cursor: pointer; border: 2px solid var(--br);
-      transition: border-color .15s, background .15s; user-select: none;
-    }
-    .sec-card.on { border-color: var(--p); background: var(--pl); }
-    .chk {
-      width: 24px; height: 24px; border-radius: 7px; border: 2px solid var(--br);
-      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-      transition: all .15s;
-    }
-    .sec-card.on .chk { background: var(--p); border-color: var(--p); }
-    .chk svg { display: none; }
-    .sec-card.on .chk svg { display: block; }
-    .sec-info { flex: 1; }
-    .sec-name { font-size: 15px; font-weight: 600; }
-    .sec-sub  { font-size: 12px; color: var(--mu); }
-    .sec-tag  { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 20px; flex-shrink: 0; }
-    .tag-f { background: #ececec; color: #333; border: 1px solid #ccc; }
-    .tag-a { background: #ececec; color: #333; border: 1px solid #ccc; }
-    .tag-b { background: #ececec; color: #333; border: 1px solid #ccc; }
-    .tag-c { background: #ececec; color: #333; border: 1px solid #ccc; }
+/* =======================================================================
+   フィード本体
+   ======================================================================= */
+#feed{
+  position:fixed; inset:0;
+  overflow-y:scroll; overflow-x:hidden;
+  scroll-snap-type:y mandatory;
+  overscroll-behavior-y:contain;
+  -webkit-overflow-scrolling:touch;
+}
+#feed::-webkit-scrollbar{display:none}
+.card{
+  position:relative;
+  height:100vh; height:100dvh;
+  scroll-snap-align:start; scroll-snap-stop:always;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding:0 0 calc(var(--navH) + var(--safeB) + 14px);
+  overflow:hidden;
+}
+/* 画面の上と下は、文字が読めるように少しだけ暗く落とす */
+.card::before{
+  content:''; position:absolute; left:0; right:0; top:0; height:190px; pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.75),rgba(0,0,0,0));
+}
+.card::after{
+  content:''; position:absolute; left:0; right:0; bottom:0; height:60%; pointer-events:none;
+  background:linear-gradient(0deg,rgba(0,0,0,.72) 12%,rgba(0,0,0,0));
+}
 
-    .start-btn {
-      display: block; width: 100%; padding: 18px; border-radius: var(--r); border: none;
-      background: var(--p); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer;
-      margin-top: 24px; font-family: inherit;
-      box-shadow: 0 4px 14px rgba(0,0,0,.18);
-      transition: background .15s, transform .1s;
-    }
-    .start-btn:active { transform: scale(.98); }
-    .start-btn:disabled { opacity: .45; cursor: default; transform: none; }
-    .prev-card {
-      background: var(--card); border-radius: var(--r); padding: 13px 16px;
-      margin-top: 14px; display: flex; align-items: center; justify-content: space-between;
-      border: 1px solid var(--br);
-    }
-    .prev-card .lbl { font-size: 13px; color: var(--mu); }
-    .prev-card .val { font-size: 15px; font-weight: 700; color: var(--p); }
+/* ---------- 左下（TikTok の アカウント名＋動画タイトル の場所） ---------- */
+.meta{position:relative; z-index:2; padding:0 78px 0 14px; max-width:100%}
+/* 何問目か */
+.who{font-size:17px; font-weight:700; letter-spacing:.02em}
+/* 問題文 */
+.cap{
+  margin-top:9px; font-size:19px; line-height:1.85; color:var(--t1);
+  display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+}
+.cap.open{display:block; -webkit-line-clamp:none; max-height:52vh; overflow-y:auto}
+.given{margin-top:7px; font-size:12.5px; color:var(--t2); line-height:1.8}
+.given b{font-weight:400; font-family:"Times New Roman",serif; font-size:14px}
+.tags{margin-top:7px; font-size:12.5px; color:var(--t2)}
+.lnks{margin-top:8px; display:flex; gap:16px; align-items:center}
+.lnk{font-size:12.5px; color:var(--t3); letter-spacing:.02em}
+.lnk:active{color:var(--t1)}
 
-    /* ── QUIZ ── */
-    .quiz-top {
-      background: var(--card); padding: 10px 16px;
-      display: flex; align-items: center; gap: 12px;
-      border-bottom: 1px solid var(--br);
-      position: sticky; top: 0; z-index: 10;
-      justify-content: space-between;
-    }
-    .back-btn {
-      background: none; border: none; color: var(--mu); cursor: pointer;
-      padding: 6px; border-radius: 8px; display: flex; align-items: center; flex-shrink: 0;
-    }
-    .prog-wrap {
-      flex: 1; background: none; border: none; padding: 4px 0; margin: 0;
-      cursor: pointer; font-family: inherit; text-align: left; display: block;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .prog-txt  {
-      font-size: 12px; color: var(--mu); margin-bottom: 4px;
-      display: flex; align-items: center; gap: 4px;
-    }
-    .prog-caret { transition: transform .2s; flex-shrink: 0; }
-    .prog-trigger-open .prog-caret { transform: rotate(180deg); }
-    .prog-bar  { height: 5px; background: var(--br); border-radius: 3px; overflow: hidden; }
-    .prog-fill { height: 100%; background: var(--p); border-radius: 3px; transition: width .35s ease; }
+/* 動画が映っている場所。ここをタップすると計算スペースが開く。 */
+.void{
+  position:absolute; inset:0; z-index:1; width:100%;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:9px;
+  color:rgba(255,255,255,.15); font-size:12.5px; letter-spacing:.08em;
+}
+.void svg{width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:1.5;
+          stroke-linecap:round; stroke-linejoin:round}
+.void:active{color:rgba(255,255,255,.35)}
 
-    /* ── 問題一覧プルダウン ── */
-    .qlist-backdrop {
-      display: none; position: fixed; inset: 0; z-index: 19;
-      background: rgba(0,0,0,.18);
-    }
-    .qlist-backdrop.show { display: block; }
-    .qlist-panel {
-      display: none; position: fixed; left: 8px; right: 8px; z-index: 20;
-      background: var(--card); border: 1px solid var(--br);
-      border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,.22);
-      padding: 14px; max-height: 70vh; overflow-y: auto;
-    }
-    .qlist-panel.show { display: block; animation: fadeUp .2s ease; }
-    .qlist-head {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .qlist-title { font-size: 13px; font-weight: 700; color: var(--tx); }
-    .qlist-legend { display: flex; gap: 10px; font-size: 11px; color: var(--mu); }
-    .qlist-legend span { display: flex; align-items: center; gap: 4px; }
-    .qlist-legend .lg { width: 11px; height: 11px; border-radius: 3px; display: inline-block; }
-    .qlist-legend .lg.ok { background: var(--ok); }
-    .qlist-legend .lg.ng { background: var(--ng); }
-    .qlist-legend .lg.un { background: var(--bg); border: 1px solid var(--br); }
-    .qlist-grid { display: flex; flex-direction: column; gap: 6px; }
-    .qlist-row {
-      display: flex; align-items: center; gap: 10px;
-      width: 100%; text-align: left; cursor: pointer;
-      border: 1px solid var(--br); border-radius: 9px;
-      background: var(--card); color: var(--tx);
-      padding: 11px 12px; font-family: inherit;
-      border-left-width: 4px; transition: background .1s;
-    }
-    .qlist-row:hover { background: var(--pl); }
-    .qlist-row:active { background: var(--bg); }
-    .qlist-num {
-      flex-shrink: 0; min-width: 26px; height: 22px; padding: 0 6px;
-      border-radius: 6px; background: var(--bg); color: var(--mu);
-      font-size: 12px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .qlist-text {
-      flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; color: var(--tx);
-      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    }
-    .qlist-mark { flex-shrink: 0; font-size: 13px; font-weight: 700; color: var(--mu); }
-    /* status */
-    .qlist-row.ok  { border-left-color: var(--ok); }
-    .qlist-row.ok  .qlist-mark { color: var(--ok); }
-    .qlist-row.ng  { border-left-color: var(--ng); }
-    .qlist-row.ng  .qlist-mark { color: var(--ng); }
-    .qlist-row.un  { border-left-color: var(--br); }
-    .qlist-row.current { background: var(--pl); box-shadow: 0 0 0 2px var(--p) inset; }
+/* 答えたあとに出る印 */
+.stamp{
+  position:absolute; left:14px; top:calc(var(--safeT) + var(--topH) + 12px); z-index:3;
+  display:inline-flex; align-items:center; gap:6px; font-size:12px; font-weight:600; letter-spacing:.08em;
+  padding:5px 12px 5px 9px; border-radius:999px;
+}
+.stamp svg{width:14px; height:14px; stroke-width:2.4; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.stamp.ok{background:var(--ok); color:#000} .stamp.ok svg{stroke:#000}
+.stamp.ng{background:var(--ng); color:#fff} .stamp.ng svg{stroke:#fff}
+.stamp.sk{background:rgba(255,255,255,.16); color:var(--t1)} .stamp.sk svg{stroke:var(--t1)}
 
-    .quiz-body { max-width: 480px; margin: 0 auto; padding: 18px 16px 48px; }
-    .q-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-    .q-tag  { font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
-    .q-src  { font-size: 11px; color: var(--mu); background: var(--bg); padding: 3px 9px; border-radius: 20px; }
-    .q-important { font-size: 11px; font-weight: 700; color: #b60033; background: #fbe9ed; padding: 3px 9px; border-radius: 20px; display: none; }
+/* ---------- 右のアイコン列 ---------- */
+.rail{
+  position:absolute; right:6px; z-index:2;
+  bottom:calc(var(--navH) + var(--safeB) + 18px);
+  display:flex; flex-direction:column; align-items:center; gap:17px;
+}
+.rail .ri{display:flex; flex-direction:column; align-items:center; gap:4px}
+.rail .ri svg{width:31px; height:31px; fill:#fff; filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
+.rail .ri .n{font-size:11.5px; font-weight:600; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.rail .ri.on svg{fill:var(--ng)}
+.rail .ri.on.cy svg{fill:var(--ok)}
+.rail .ri:active{transform:scale(.9)}
+/* 範囲バッジ（TikTok のアイコン写真の場所） */
+.ava{position:relative; width:44px; height:44px; margin-bottom:2px}
+.ava .ph{
+  position:absolute; inset:0; border-radius:50%; border:1.5px solid #fff; background:#111;
+  display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; line-height:1.15;
+  text-align:center; padding:2px; overflow:hidden;
+}
+.ava .ring{position:absolute; inset:-3px; border-radius:50%}
+.ava .pl{
+  position:absolute; left:50%; bottom:-8px; transform:translateX(-50%);
+  width:20px; height:20px; border-radius:50%; background:var(--ng); color:#fff;
+  display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1; font-weight:400;
+}
+/* 回るレコード（TikTok の楽曲ディスクの場所）＝ 出題順の切り替え */
+.disc{
+  width:42px; height:42px; border-radius:50%;
+  background:radial-gradient(circle at 50% 50%, #4a4a4f 0 26%, #1c1c1f 27% 100%);
+  border:1px solid rgba(255,255,255,.22);
+  display:flex; align-items:center; justify-content:center;
+  animation:spin 6s linear infinite;
+}
+.disc svg{width:17px; height:17px; fill:#fff}
+.ri.ord.stop .disc{animation-play-state:paused}
+.ri.ord .n{font-size:9.5px; color:var(--t2); max-width:60px; text-align:center}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-    .q-card {
-      background: var(--card); border-radius: var(--r); padding: 20px; margin-bottom: 14px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.08);
-    }
-    .q-text { font-size: 16px; line-height: 1.85; }
-    .q-text .blank {
-      display: inline-block; background: var(--pl); color: var(--p);
-      padding: 1px 10px; border-radius: 5px; font-weight: 700;
-    }
-    .num-part { color: var(--p); font-weight: 700; }
-    .q-ja { font-size: 13px; color: var(--mu); padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--br); display: none; }
+/* =======================================================================
+   上のタブ（範囲えらび）
+   ======================================================================= */
+#top{
+  position:fixed; left:0; right:0; top:0; z-index:6;
+  padding-top:var(--safeT);
+  background:linear-gradient(180deg,rgba(0,0,0,.55),rgba(0,0,0,0));
+}
+#tabs{
+  height:var(--topH); display:flex; align-items:center; gap:18px;
+  padding:0 16px; overflow-x:auto; overflow-y:hidden; scrollbar-width:none;
+}
+#tabs::-webkit-scrollbar{display:none}
+.tab{
+  flex:none; font-size:15px; color:rgba(255,255,255,.62); letter-spacing:.02em;
+  padding:6px 0 5px; position:relative; white-space:nowrap;
+}
+.tab.on{color:#fff; font-weight:700}
+.tab.on::after{
+  content:''; position:absolute; left:50%; transform:translateX(-50%); bottom:0;
+  width:22px; height:2.5px; border-radius:2px; background:#fff;
+}
+.tab .dot{
+  display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--ng);
+  vertical-align:super; margin-left:3px;
+}
 
-    /* ExC frame context */
-    .exc-context {
-      font-size: 14px; color: var(--mu); background: var(--bg);
-      padding: 10px 14px; border-radius: 9px; margin-bottom: 12px; line-height: 1.7;
-    }
-    .exc-context .ctx-blank {
-      display: inline-block; background: var(--pl); color: var(--p);
-      padding: 1px 14px; border-radius: 5px; font-weight: 700; margin: 0 2px;
-    }
+/* =======================================================================
+   下のバー
+   ======================================================================= */
+#nav{
+  position:fixed; left:0; right:0; bottom:0; z-index:6;
+  height:calc(var(--navH) + var(--safeB)); padding-bottom:var(--safeB);
+  background:#000; border-top:1px solid rgba(255,255,255,.08);
+  display:flex; align-items:center;
+}
+.nb{flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; height:100%}
+.nb span{font-size:10px; color:var(--t3); letter-spacing:.02em}
+.nb svg{width:22px; height:22px; fill:none; stroke:var(--t3); stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+.nb.on span{color:#fff}
+.nb.on svg{stroke:#fff}
+.nb:active{opacity:.6}
+/* まん中の「書く」ボタン */
+.nb.pen{flex:1.25}
+.penbtn{
+  position:relative; width:46px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+}
+.penbtn::before,.penbtn::after{content:''; position:absolute; top:0; width:46px; height:30px; border-radius:9px}
+.penbtn::before{left:-4px; background:var(--ok)}
+.penbtn::after{left:4px; background:var(--ng)}
+.penbtn i{
+  position:absolute; inset:0; z-index:2; background:#fff; border-radius:9px;
+  display:flex; align-items:center; justify-content:center;
+}
+.nb .penbtn svg{width:20px; height:20px; stroke:#000; stroke-width:2; fill:none}
+.nb.pen span{color:var(--t3)}
 
-    /* Options */
-    .opts { display: flex; flex-direction: column; gap: 9px; }
-    .opt-btn {
-      display: flex; align-items: center; gap: 12px;
-      padding: 14px 16px; background: var(--card); border: 2px solid var(--br);
-      border-radius: var(--r); cursor: pointer; text-align: left;
-      font-size: 15px; font-family: inherit;
-      transition: border-color .12s, background .12s;
-      box-shadow: 0 1px 2px rgba(0,0,0,.05);
-    }
-    .opt-btn:hover:not(:disabled) { border-color: var(--p); background: var(--pl); }
-    .opt-btn:disabled { cursor: default; }
-    .opt-num {
-      width: 30px; height: 30px; border-radius: 50%; background: var(--bg);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: var(--mu); flex-shrink: 0;
-      transition: background .12s, color .12s;
-    }
-    .opt-btn.correct { border-color: var(--ok); background: var(--ok-bg); }
-    .opt-btn.correct .opt-num { background: var(--ok); color: #fff; }
-    .opt-btn.wrong { border-color: var(--ng); background: var(--ng-bg); }
-    .opt-btn.wrong .opt-num { background: var(--ng); color: #fff; }
-    /* ── Trackpad（選択問題用） ── */
-    .trackpad {
-      position: fixed; left: 0; right: 0; z-index: 15;
-      bottom: 0;
-      padding: 0 16px calc(10px + env(safe-area-inset-bottom)) 16px;
-      background: linear-gradient(to top, rgba(246,246,244,.98) 80%, rgba(246,246,244,0));
-      pointer-events: none;
-    }
-    .trackpad.active { pointer-events: auto; }
-    .trackpad-surface {
-      width: 100%; height: 140px;
-      border-radius: 16px;
-      background: #e8e8e6;
-      border: 1px solid #d0d0ce;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,.06), 0 1px 4px rgba(0,0,0,.05);
-      touch-action: none;
-      -webkit-user-select: none; user-select: none;
-      cursor: pointer;
-      transition: border-color .15s, box-shadow .15s;
-    }
-    .trackpad-surface.touching {
-      background: #e2e2e0;
-      border-color: #aaa;
-      box-shadow: inset 0 1px 4px rgba(0,0,0,.1), 0 1px 6px rgba(0,0,0,.1);
-    }
-    .trackpad-hint {
-      text-align: center; font-size: 10px; color: var(--mu);
-      margin-top: 5px; letter-spacing: .05em;
-      transition: opacity .2s;
-    }
-    .trackpad-hint.hidden { opacity: 0; }
-    /* パッド表示中は下が隠れないように余白を確保 */
-    .quiz-body.pad-on { padding-bottom: 210px; }
+/* =======================================================================
+   シート（解答・範囲・記録）
+   ======================================================================= */
+#back{position:fixed; inset:0; background:rgba(0,0,0,.5); opacity:0; pointer-events:none; transition:opacity .2s; z-index:8}
+#back.on{opacity:1; pointer-events:auto}
+.sheet{
+  position:fixed; left:0; right:0; bottom:0; z-index:9;
+  background:var(--sheet); border-radius:14px 14px 0 0;
+  transform:translateY(101%); transition:transform .26s cubic-bezier(.22,.61,.36,1);
+  display:flex; flex-direction:column; max-height:88dvh;
+  padding-bottom:var(--safeB);
+}
+.sheet.on{transform:translateY(0)}
+.grip{padding:7px 0 3px; display:flex; justify-content:center; flex:none}
+.grip i{width:36px; height:4px; border-radius:2px; background:rgba(255,255,255,.28)}
+.sh{
+  flex:none; text-align:center; font-size:13.5px; font-weight:600; color:var(--t1);
+  padding:6px 44px 10px; position:relative; border-bottom:1px solid var(--line);
+}
+.sh .x{position:absolute; right:12px; top:2px; font-size:21px; line-height:1; color:var(--t2); padding:5px 8px}
+.sbody{flex:1 1 auto; overflow-y:auto; min-height:0; -webkit-overflow-scrolling:touch}
 
-    /* 選択肢のトラックパッドハイライト */
-    .opt-btn.tp-highlight {
-      border-color: var(--p); background: var(--pl);
-      box-shadow: 0 0 0 2px rgba(26,26,26,.15);
-    }
-    .opt-btn.tp-highlight .opt-num {
-      background: var(--p); color: #fff;
-    }
+/* ---------- 解答・解説 ---------- */
 
-    /* Feedback */
-    .fb-card {
-      border-radius: var(--r); padding: 16px 18px; margin-top: 12px;
-      border-left: 4px solid; display: none; background: var(--card);
-      box-shadow: 0 1px 3px rgba(0,0,0,.07);
-    }
-    .fb-card.show { display: block; animation: fadeIn .25s ease; }
-    .fb-card.ok { border-color: var(--ok); }
-    .fb-card.ng { border-color: var(--ng); }
-    .fb-head { font-weight: 700; font-size: 15px; display: flex; align-items: flex-start; gap: 7px; margin-bottom: 10px; flex-wrap: wrap; }
-    .fb-head.ok { color: var(--ok); }
-    .fb-head.ng { color: var(--ng); }
-    .fb-fix { background: var(--bg); border-radius: 8px; padding: 8px 12px; font-size: 14px; font-weight: 600; margin-bottom: 10px; display: none; }
-    .fb-tra { font-size: 13px; font-weight: 600; color: var(--p); margin-bottom: 8px; display: none; }
-    .fb-exp { font-size: 13px; color: var(--mu); line-height: 1.75; }
+.ansq{padding:12px 16px 10px; font-size:14px; color:var(--t2); line-height:2; flex:none;
+      border-bottom:1px solid var(--line)}
+.ansq .g{display:block; margin-top:4px; font-size:12px; color:var(--t3)}
+#ansInput{display:flex; flex-direction:column; min-height:0; flex:1}
+.field{
+  margin:12px 12px 4px; background:var(--sheet2); border:1px solid transparent; border-radius:11px;
+  min-height:54px; padding:14px; font-size:20px; line-height:1.4; word-break:break-all; flex:none;
+  font-family:"Times New Roman",serif;
+}
+.field.err{border-color:var(--ng)}
+.field.jp{font-family:inherit; font-size:16px}
+.field .ph{color:var(--t3); font-size:14px; font-family:inherit}
+.field .fr{margin:0 .18em}
+.caret{display:inline-block; width:1.5px; height:1.05em; background:#fff; vertical-align:-.18em; margin:0 .5px;
+       animation:bl 1.05s steps(1) infinite}
+@keyframes bl{50%{opacity:0}}
+.hintline{font-size:11px; color:var(--t3); padding:2px 16px 8px; flex:none; letter-spacing:.02em;
+          display:flex; align-items:baseline; gap:10px}
+.hintline #hintLine{flex:1; min-width:0}
+.hintline .lnk{flex:none; font-size:11px; padding:2px 0}
+.hintline #hintLine.warn,.hintline #hintLine.todo{color:var(--ng); font-weight:600}
+.kb{padding:2px 6px 8px; flex:none; display:grid; grid-template-columns:repeat(6,1fr); gap:5px}
+.k{
+  height:44px; border:1px solid rgba(255,255,255,.13); background:var(--sheet2); border-radius:9px;
+  font-size:17px; display:flex; align-items:center; justify-content:center; color:#fff;
+  font-family:"Times New Roman",serif; transition:background .08s, transform .05s; user-select:none;
+}
+.k:active{background:#3a3a3e; transform:scale(.95)}
+.k.fn{background:#141416; font-size:14px; font-family:inherit; color:var(--t2)}
+.k.fn svg{width:17px; height:17px; stroke:var(--t2); stroke-width:1.7; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.k.go{grid-column:span 2; background:var(--ng); border-color:var(--ng); color:#fff; font-size:14.5px;
+      font-weight:600; font-family:inherit; letter-spacing:.08em}
+.k .sm{font-size:12px}
+.k.sm{font-size:12px}
+.how{margin:2px 12px 10px; padding:12px 14px; background:#141416; border-radius:12px;
+     flex:none; text-align:left; display:grid; grid-template-columns:repeat(2,1fr); gap:9px 14px;
+     overflow-y:auto; min-height:0}
+.how > span{display:flex; align-items:baseline; gap:9px; font-size:12px; min-width:0}
+.how b{font-family:"Times New Roman",serif; font-size:15px; font-weight:400; flex:none; min-width:48px}
+.how > span > span{color:var(--t3); font-size:11px; font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+          overflow:hidden; text-overflow:ellipsis}
+.how .hb{grid-column:1/-1; justify-content:center; color:var(--t3); font-size:10.5px;
+         letter-spacing:.08em; padding-top:3px; border-top:1px solid var(--line); margin-top:1px}
+.chbox{padding:8px 12px 12px; display:flex; flex-direction:column; gap:7px; overflow-y:auto; min-height:0}
+.ch{
+  min-height:50px; padding:12px 16px; text-align:left; border:1px solid rgba(255,255,255,.13);
+  background:var(--sheet2); border-radius:11px; font-size:15px; color:#fff;
+  display:flex; align-items:center; gap:11px;
+}
+.ch::before{content:''; width:17px; height:17px; border-radius:50%; border:1.5px solid var(--t3); flex:none}
+.ch.on{border-color:#fff}
+.ch.on::before{border-color:#fff; border-width:5px}
 
-    /* ExC reveal */
-    .exc-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
-    .exc-chip { background: var(--pl); color: var(--p); padding: 6px 13px; border-radius: 20px; font-size: 14px; font-weight: 500; }
-    .reveal-btn {
-      width: 100%; padding: 14px; background: #fff; color: var(--p);
-      border: 2px solid var(--p); border-radius: var(--r);
-      font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
-      transition: background .12s, color .12s;
-    }
-    .reveal-btn:hover { background: var(--p); color: #fff; }
-    .ans-reveal {
-      background: var(--ok-bg); border-radius: var(--r); padding: 16px 18px;
-      margin-top: 12px; display: none;
-    }
-    .ans-reveal.show { display: block; animation: fadeIn .25s ease; }
-    .ans-sent { font-size: 15px; font-weight: 700; color: var(--ok); margin-bottom: 8px; }
-    .ans-note { font-size: 12px; background: #fff; padding: 5px 10px; border-radius: 6px; margin-bottom: 8px; color: #333; display: none; }
-    .ans-exp  { font-size: 13px; color: #333; line-height: 1.75; }
+/* 判定 */
+.res{flex:1 1 auto; min-height:0; padding:14px 16px 20px; overflow-y:auto}
+.rq{font-size:14px; color:var(--t2); line-height:2; padding-bottom:11px; margin-bottom:12px; border-bottom:1px solid var(--line)}
+.rq .rg{font-size:11.5px; color:var(--t3); margin-left:4px}
+.rmark{display:inline-flex; align-items:center; gap:8px; font-size:17px; font-weight:600; letter-spacing:.1em;
+       padding:8px 17px 8px 13px; border-radius:999px}
+.rmark svg{width:21px; height:21px; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.rmark.ok{background:var(--ok); color:#000} .rmark.ok svg{stroke:#000}
+.rmark.ng{background:var(--ng); color:#fff} .rmark.ng svg{stroke:#fff}
+.rmark.sk{background:rgba(255,255,255,.14); color:#fff} .rmark.sk svg{stroke:#fff; fill:#fff}
+.ryour{font-size:12px; color:var(--t3); margin-top:9px}
+.ryour b{color:var(--ng); font-weight:400; font-family:"Times New Roman",serif; font-size:14px}
+.rans{margin-top:12px; background:var(--sheet2); border:1px solid transparent; border-radius:11px; padding:12px 14px}
+.rans.ngb{border-color:var(--ng)}
+.rans .lb{font-size:10px; color:var(--t3); letter-spacing:.16em; margin-bottom:4px}
+.rans .va{font-size:20px; font-family:"Times New Roman",serif}
+.rsub{font-size:11.5px; color:var(--t3); margin-top:5px}
+.rexp{margin-top:11px; font-size:13px; color:var(--t2); line-height:1.95; padding:0 2px}
+.proof{font-size:14px; line-height:1.95; color:var(--t1); white-space:pre-line}
+.selfask{font-size:11.5px; color:var(--t3); margin-top:12px; text-align:center; letter-spacing:.04em}
+.rbtns{display:flex; gap:8px; margin-top:16px}
+.pbtn{
+  flex:1; min-height:46px; border-radius:11px; background:var(--ng); color:#fff;
+  font-size:14.5px; font-weight:600; letter-spacing:.04em;
+  display:flex; align-items:center; justify-content:center;
+}
+.pbtn.ghost{background:var(--sheet2); color:#fff}
+.pbtn:active{opacity:.8}
 
-    /* Next button */
-    .next-btn {
-      display: none; width: 100%; padding: 16px; border-radius: var(--r); border: none;
-      background: var(--p); color: #fff; font-size: 16px; font-weight: 700;
-      cursor: pointer; margin-top: 14px; font-family: inherit;
-      box-shadow: 0 4px 14px rgba(0,0,0,.18);
-      transition: background .12s, transform .1s;
-    }
-    .next-btn.show { display: block; animation: fadeUp .25s ease; }
-    /* 選択問題の回答後は下部固定 */
-    .next-btn.show.fixed-bottom {
-      position: fixed; left: 0; right: 0; bottom: 0; z-index: 16;
-      margin: 0; border-radius: 0;
-      padding: 18px 16px calc(18px + env(safe-area-inset-bottom));
-      box-shadow: 0 -2px 12px rgba(0,0,0,.12);
-      animation: slideUpIn .25s ease;
-    }
-    @keyframes slideUpIn {
-      from { transform: translateY(100%); }
-      to   { transform: translateY(0); }
-    }
-    .next-btn:active { transform: scale(.98); }
-    .next-btn.fixed-bottom:active { transform: none; opacity: .9; }
-    .next-btn:hover { background: var(--pd); }
+/* ---------- 範囲シート ---------- */
+.gname{font-size:10.5px; color:var(--t3); letter-spacing:.14em; padding:16px 16px 6px}
+.sitem{
+  width:100%; text-align:left; padding:13px 16px; display:flex; align-items:center; gap:12px;
+  border-bottom:1px solid rgba(255,255,255,.07); font-size:14.5px;
+}
+.sitem:active{background:rgba(255,255,255,.06)}
+.sitem .nm{flex:1; min-width:0}
+.sitem .nm i{display:block; font-style:normal; font-size:11px; color:var(--t3); margin-top:2px}
+.sitem .num{font-size:11.5px; color:var(--t3); flex:none}
+.sitem.on .nm{font-weight:700}
+.sitem.on::after{content:'●'; font-size:9px; color:var(--ng)}
+.bar{height:3px; border-radius:2px; background:rgba(255,255,255,.14); margin-top:6px; overflow:hidden}
+.bar i{display:block; height:100%; background:var(--ok); border-radius:2px}
 
-    /* Prev question button (戻る) */
-    .prev-q-btn {
-      width: 100%; padding: 11px; border-radius: var(--r);
-      border: 1px solid var(--br); background: var(--card); color: var(--mu);
-      font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px;
-      font-family: inherit; transition: background .12s, color .12s;
-    }
-    .prev-q-btn:hover { background: var(--pl); color: var(--tx); }
-    .prev-q-btn:active { transform: scale(.99); }
+/* ---------- 記録シート ---------- */
+.stwrap{padding:14px 16px 22px}
+.hero{display:flex; gap:10px; margin-bottom:16px}
+.hcard{flex:1; background:var(--sheet2); border-radius:12px; padding:12px 12px 11px}
+.hcard b{display:block; font-size:23px; font-weight:700; line-height:1.2}
+.hcard i{display:block; font-style:normal; font-size:10.5px; color:var(--t3); margin-top:3px; letter-spacing:.06em}
+.stsec{font-size:10.5px; color:var(--t3); letter-spacing:.14em; margin:18px 0 8px}
+.strow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:13.5px}
+.strow .nm{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.strow .v{font-size:11.5px; color:var(--t3); flex:none}
+.danger{margin-top:22px; width:100%; min-height:44px; border-radius:11px; border:1px solid var(--ng);
+        color:var(--ng); font-size:13px; display:flex; align-items:center; justify-content:center}
+.note{font-size:11px; color:var(--t3); line-height:1.8; margin-top:10px}
 
-    /* ── RESULTS ── */
-    .res-hero { background: #1a1a1a; color: #fff; text-align: center; padding: 52px 24px 36px; }
-    .res-hero h2 { font-size: 24px; font-weight: 800; margin-bottom: 20px; }
-    .score-ring {
-      width: 140px; height: 140px; border-radius: 50%;
-      border: 5px solid rgba(255,255,255,.35); background: rgba(255,255,255,.1);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      margin: 0 auto;
-    }
-    .score-big { font-size: 32px; font-weight: 800; line-height: 1; }
-    .score-pct { font-size: 13px; opacity: .8; margin-top: 3px; }
-    .res-body { max-width: 480px; margin: 0 auto; padding: 24px 16px 48px; }
-    .sec-res {
-      background: var(--card); border-radius: var(--r); padding: 14px 16px;
-      margin-bottom: 10px; display: flex; align-items: center; gap: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,.07);
-    }
-    .sec-res-name { font-size: 14px; font-weight: 600; flex: 1; }
-    .mini-bar { width: 72px; height: 5px; background: var(--br); border-radius: 3px; overflow: hidden; }
-    .mini-fill { height: 100%; background: var(--p); border-radius: 3px; }
-    .sec-res-score { font-size: 13px; font-weight: 700; color: var(--p); min-width: 52px; text-align: right; }
-    .res-acts { display: flex; gap: 10px; margin-top: 24px; }
-    .btn-sec {
-      flex: 1; padding: 14px; background: #fff; color: var(--p); border: 2px solid var(--p);
-      border-radius: var(--r); font-size: 15px; font-weight: 600; cursor: pointer;
-      font-family: inherit; transition: background .12s;
-    }
-    .btn-sec:hover { background: var(--pl); }
-    .btn-pri {
-      flex: 1; padding: 14px; background: var(--p); color: #fff; border: none;
-      border-radius: var(--r); font-size: 15px; font-weight: 700; cursor: pointer;
-      font-family: inherit; box-shadow: 0 4px 14px rgba(0,0,0,.18);
-      transition: background .12s;
-    }
-    .btn-pri:hover { background: var(--pd); }
+/* =======================================================================
+   計算スペース
 
-    @keyframes fadeIn { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
-    @keyframes fadeUp { from { opacity:0; transform:translateY(8px); }  to { opacity:1; transform:translateY(0); } }
+   別の画面には移らない。問題も右のアイコン列も出したまま、
+   その上に透明なキャンバスを1枚だけ重ねて書く。
+   書いたものは書き終えたあとも残るので、カードを見れば計算が見える。
+   ======================================================================= */
+#padLayer{
+  position:fixed; left:0; right:0; top:0; z-index:3;
+  bottom:calc(var(--navH) + var(--safeB));
+  pointer-events:none;                 /* 書くモードのときだけ受け取る */
+}
+body.writing #padLayer{pointer-events:auto}
+#pad{position:absolute; inset:0; width:100%; height:100%; touch-action:none; display:block}
+#padHint{
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  color:rgba(255,255,255,.22); font-size:13px; pointer-events:none; transition:opacity .2s; letter-spacing:.06em;
+  opacity:0;
+}
+/* 書いている間は、問題文と右の列を道具の列のぶんだけ持ち上げる */
+.card,.rail{transition:padding-bottom .18s, bottom .18s}
+body.writing .card{padding-bottom:calc(var(--navH) + var(--safeB) + var(--toolH) + 14px)}
+body.writing .rail{bottom:calc(var(--navH) + var(--safeB) + var(--toolH) + 18px)}
+body.writing .void,
+body.knows-write .void{opacity:0}
+#tools{
+  position:fixed; left:0; right:0; z-index:5;
+  bottom:calc(var(--navH) + var(--safeB));
+  height:var(--toolH);
+  display:flex; align-items:center; gap:4px; padding:0 8px;
+  background:rgba(0,0,0,.86); backdrop-filter:blur(6px);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+.tb{
+  height:38px; min-width:36px; padding:0 7px; border-radius:9px; background:#1e1e21; color:var(--t2);
+  display:flex; align-items:center; justify-content:center; font-size:12px; gap:5px;
+  flex:none; white-space:nowrap;
+}
+.tb svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.tb.on{background:#fff; color:#000}
+.tb:disabled{opacity:.32}
+.tb.done{margin-left:auto; background:var(--ng); color:#fff; font-weight:600; padding:0 12px}
+.seg{display:flex; gap:3px; background:#1e1e21; border-radius:9px; padding:3px; flex:none}
+.seg button{width:24px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:var(--t3)}
+.seg button.on{background:#fff; color:#000}
+.seg button i{display:block; background:currentColor; border-radius:99px; width:16px}
 
-    /* ── ExC Duolingo style ── */
-    .build-area {
-      min-height: 68px; background: var(--pl);
-      border: 2px dashed #A5B4FC; border-radius: var(--r);
-      padding: 12px; margin-bottom: 14px;
-      display: flex; flex-wrap: wrap; gap: 8px;
-      align-content: flex-start; position: relative;
-    }
-    .build-hint {
-      color: #A5B4FC; font-size: 13px;
-      position: absolute; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      white-space: nowrap; pointer-events: none;
-    }
-    .pool-area {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      margin-bottom: 14px; min-height: 44px;
-    }
-    .wchip {
-      padding: 9px 14px; border-radius: 10px;
-      font-size: 14px; font-weight: 500;
-      cursor: pointer; user-select: none;
-      transition: transform .1s, background .12s, border-color .12s;
-      font-family: inherit; line-height: 1.3;
-    }
-    .wchip:active { transform: scale(.93); }
-    .wchip-pool { background: white; border: 2px solid var(--br); color: var(--tx); }
-    .wchip-pool:hover { border-color: var(--p); background: var(--pl); }
-    .wchip-ans {
-      background: var(--p); color: white; border: 2px solid var(--p);
-      touch-action: none; -webkit-user-select: none; -webkit-touch-callout: none;
-    }
-    .wchip-ans:hover { background: var(--pd); border-color: var(--pd); }
-    .check-btn {
-      width: 100%; padding: 14px; border-radius: var(--r); border: none;
-      background: var(--p); color: white;
-      font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
-      box-shadow: 0 4px 14px rgba(0,0,0,.18);
-      transition: background .12s, opacity .12s;
-    }
-    .check-btn:disabled { opacity: .45; cursor: default; box-shadow: none; }
-    .check-btn:not(:disabled):hover { background: var(--pd); }
+/* 画面が低いときは、解答パネルが入り切るように詰める */
+@media (max-height:600px){
+  .k{height:36px; font-size:15px}
+  .field{min-height:44px; padding:10px 12px; font-size:17px}
+  .ansq{padding:8px 16px 7px; line-height:1.8}
+  .ch{min-height:42px; padding:9px 14px}
+}
 
-    /* ── Drag ghost & dragging state ── */
-    .wchip-ans.dragging { opacity: 0.2; transform: scale(0.94); }
-    .drag-ghost {
-      position: fixed; pointer-events: none; z-index: 9999;
-      background: var(--pd); color: white; border: 2px solid var(--pd);
-      border-radius: 10px; padding: 9px 14px;
-      font-size: 14px; font-weight: 500; font-family: inherit;
-      opacity: 0.92; transform: scale(1.1);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.28);
-      white-space: nowrap;
-    }
-
-    /* ── ExB corrected sentence ── */
-    .fb-corrected {
-      font-size: 14px; background: var(--ok-bg); color: var(--ok);
-      border-radius: 8px; padding: 8px 12px; margin-bottom: 10px;
-      font-weight: 500; display: none;
-    }
-
-    /* ── ExB interactive ── */
-    .exb-seg {
-      border-bottom: 2px dotted var(--mu);
-      padding-bottom: 2px; cursor: pointer;
-      transition: background .12s, border-color .12s;
-    }
-    .exb-seg:hover { background: var(--pl); }
-    .exb-seg.selected {
-      border-bottom-style: solid; border-bottom-color: var(--ng);
-      background: var(--pl);
-    }
-    .exb-seg.correct-ans {
-      border-bottom-style: solid; border-bottom-color: var(--ok);
-      background: var(--ok-bg);
-    }
-    .exb-num-btn {
-      display: inline-flex; align-items: center;
-      background: var(--pl); color: var(--p);
-      border: 2px solid var(--p); border-radius: 6px;
-      padding: 2px 9px; font-size: 15px; font-weight: 700;
-      cursor: pointer; font-family: inherit;
-      margin: 0 1px; vertical-align: middle; line-height: 1.6;
-      transition: background .12s, color .12s, border-color .12s;
-    }
-    .exb-num-btn:hover:not(:disabled) { background: var(--p); color: white; }
-    .exb-num-btn.selected  { background: var(--ng); border-color: var(--ng); color: white; }
-    .exb-num-btn.correct-ans { background: var(--ok); border-color: var(--ok); color: white; }
-    .exb-num-btn:disabled  { opacity: .65; cursor: default; }
-    .exb-inst { font-size: 13px; color: var(--mu); margin-bottom: 12px; }
-    .exb-input-field {
-      width: 100%; padding: 12px 14px;
-      border: 2px solid var(--br); border-radius: var(--r);
-      font-size: 15px; font-family: inherit; color: var(--tx);
-      outline: none; transition: border-color .15s; background: white;
-      margin-bottom: 14px;
-    }
-    .exb-input-field:focus { border-color: var(--p); }
-    .exb-input-field:disabled { opacity: .6; background: var(--bg); }
-    #fill-zone .exb-input-field { margin: 12px 0 10px; }
-    #fill-zone .exb-reveal-btn { margin-top: 8px; }
-    .exb-num-result {
-      font-size: 15px; font-weight: 700; padding: 10px 14px;
-      border-radius: 10px; margin-bottom: 14px; text-align: center;
-    }
-    .exb-num-result.ok { background: var(--ok-bg); color: var(--ok); }
-    .exb-num-result.ng { background: var(--ng-bg); color: var(--ng); }
-    .exb-compare {
-      background: var(--bg); border-radius: var(--r);
-      padding: 14px 16px; margin-bottom: 14px;
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .exb-compare-row { display: flex; align-items: baseline; gap: 12px; }
-    .exb-cmp-lbl {
-      font-size: 11px; font-weight: 700; color: var(--mu);
-      min-width: 48px; text-transform: uppercase; letter-spacing: .05em; flex-shrink: 0;
-    }
-    .exb-cmp-val { font-size: 15px; font-weight: 600; }
-    .exb-cmp-val.ok { color: var(--ok); }
-    .exb-self-q { font-size: 13px; color: var(--mu); text-align: center; margin-bottom: 10px; }
-    .exb-self-btns { display: flex; gap: 10px; }
-    .exb-self-btn {
-      flex: 1; padding: 14px; border-radius: var(--r); border: 2px solid;
-      font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
-      transition: background .12s, color .12s;
-    }
-    .exb-self-btn.ok { border-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
-    .exb-self-btn.ok:hover { background: var(--ok); color: white; }
-    .exb-self-btn.ng { border-color: var(--ng); color: var(--ng); background: var(--ng-bg); }
-    .exb-self-btn.ng:hover { background: var(--ng); color: white; }
-    .exb-reveal-btn {
-      width: 100%; padding: 13px; background: #fff; color: var(--mu);
-      border: 2px solid var(--br); border-radius: var(--r);
-      font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
-      transition: background .12s; margin-top: 10px;
-    }
-    .exb-reveal-btn:hover { background: var(--bg); color: var(--tx); }
-
-    /* ── Retry wrong button ── */
-    .btn-wrong {
-      width: 100%; padding: 14px; border-radius: var(--r);
-      background: rgba(220,38,38,.08); color: var(--ng);
-      border: 2px solid rgba(220,38,38,.3);
-      font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
-      margin-bottom: 10px; transition: background .12s;
-    }
-    .btn-wrong:hover { background: rgba(220,38,38,.15); }
-
-    /* ── Hamburger ── */
-    .home-hero { position: relative; }
-    .res-hero  { position: relative; }
-    .hamburger-btn {
-      position: absolute; top: 14px; right: 14px;
-      background: rgba(255,255,255,.2); border: none; border-radius: 9px;
-      padding: 9px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 5px;
-    }
-    .hamburger-btn span { display: block; width: 22px; height: 2px; background: #fff; border-radius: 2px; }
-    /* inline hamburger for white-bg headers */
-    .hamburger-btn-sm {
-      background: var(--bg); border: none; border-radius: 9px;
-      padding: 7px 8px; cursor: pointer; display: flex; flex-direction: column; gap: 4px;
-      flex-shrink: 0;
-    }
-    .hamburger-btn-sm span { display: block; width: 20px; height: 2px; background: var(--mu); border-radius: 2px; }
-
-    /* ── Menu overlay ── */
-    .menu-overlay {
-      position: fixed; inset: 0; z-index: 200;
-      background: rgba(0,0,0,.45); display: none;
-      justify-content: flex-end;
-    }
-    .menu-overlay.show { display: flex; animation: fadeIn .2s ease; }
-    .menu-panel {
-      background: var(--card); width: 260px; min-height: 100vh;
-      padding: 0; display: flex; flex-direction: column;
-      box-shadow: -4px 0 24px rgba(0,0,0,.15);
-      animation: slideIn .2s ease;
-    }
-    @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-    .menu-header {
-      background: #1a1a1a;
-      padding: 44px 20px 20px; color: #fff;
-    }
-    .menu-header h3 { font-size: 16px; font-weight: 800; }
-    .menu-header p  { font-size: 12px; opacity: .8; margin-top: 3px; }
-    .menu-items { padding: 12px 0; flex: 1; }
-    .menu-item {
-      display: flex; align-items: center; gap: 14px;
-      width: 100%; padding: 14px 20px; background: none; border: none;
-      cursor: pointer; text-align: left; font-family: inherit;
-      transition: background .12s; border-left: 3px solid transparent;
-    }
-    .menu-item:hover { background: var(--pl); }
-    .menu-item.active { border-left-color: var(--p); background: var(--pl); }
-    .menu-icon { font-size: 22px; flex-shrink: 0; }
-    .menu-item-title { font-size: 15px; font-weight: 700; color: var(--tx); }
-    .menu-item-sub   { font-size: 12px; color: var(--mu); margin-top: 1px; }
-    .menu-close-area { flex: 1; }
-
-    /* ── 英コミュ screen ── */
-    .eigo-top {
-      background: var(--card); padding: 10px 16px;
-      display: flex; align-items: center; gap: 12px;
-      border-bottom: 1px solid var(--br);
-      position: sticky; top: 0; z-index: 10;
-    }
-    .eigo-top h2 { font-size: 16px; font-weight: 700; flex: 1; }
-    .eigo-body { max-width: 480px; margin: 0 auto; padding: 16px 16px 48px; }
-    .sen-card {
-      background: var(--card); border-radius: var(--r);
-      padding: 16px 18px; margin-bottom: 12px;
-      border: 1px solid var(--br);
-      border-left: 3px solid var(--p);
-    }
-    .sen-num { font-size: 11px; font-weight: 700; color: var(--mu); margin-bottom: 8px; }
-    .sen-en { font-size: 16px; font-weight: 600; line-height: 1.8; margin-bottom: 6px; }
-    .sen-ja { font-size: 14px; color: var(--mu); line-height: 1.8; margin-bottom: 8px; }
-    .sen-grammar {
-      font-size: 13px; color: #333; background: #f0f0f0;
-      border-radius: 4px; padding: 8px 11px; line-height: 1.8;
-    }
-
-  </style>
+/* はじめの案内 */
+#intro{position:fixed; inset:0; z-index:20; background:rgba(0,0,0,.92); display:flex; flex-direction:column;
+       align-items:center; justify-content:center; padding:30px 26px calc(30px + var(--safeB)); text-align:center}
+#intro h1{font-size:21px; margin:0 0 6px; letter-spacing:.02em}
+#intro p{font-size:13px; color:var(--t2); line-height:2; margin:0 0 22px}
+#intro ul{list-style:none; padding:0; margin:0 0 26px; font-size:13.5px; color:var(--t2); line-height:2.2; text-align:left}
+#intro ul b{color:#fff; font-weight:600}
+#intro .pbtn{flex:none; height:50px; max-width:260px; width:100%}
+</style>
 </head>
 <body>
 
-<!-- ════ MENU OVERLAY ════ -->
-<div class="menu-overlay" id="menu-overlay">
-  <div class="menu-panel">
-    <div class="menu-header">
-      <h3>科目を選択</h3>
-      <p>学習する内容を選んでください</p>
+<div id="feed"></div>
+
+<!-- 上：範囲えらび -->
+<header id="top"><div id="tabs"></div></header>
+
+<!-- 下：メニュー -->
+<nav id="nav">
+  <button class="nb on" data-a="home">
+    <svg viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20H4z"/></svg><span>フィード</span>
+  </button>
+  <button class="nb" data-a="scope">
+    <svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>範囲</span>
+  </button>
+  <button class="nb pen" data-a="write">
+    <span class="penbtn"><i><svg viewBox="0 0 24 24"><path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 6l3 3"/></svg></i></span>
+    <span>書く</span>
+  </button>
+  <button class="nb" data-a="answer">
+    <svg viewBox="0 0 24 24"><path d="M20 15a3 3 0 01-3 3H8l-4 3V6a3 3 0 013-3h10a3 3 0 013 3z"/></svg><span>解答</span>
+  </button>
+  <button class="nb" data-a="stats">
+    <svg viewBox="0 0 24 24"><path d="M5 19V11M12 19V5M19 19v-5"/></svg><span>記録</span>
+  </button>
+</nav>
+
+<!-- 計算スペース（画面はそのまま、上に重ねて書く） -->
+<div id="padLayer">
+  <canvas id="pad"></canvas>
+  <div id="padHint">ここに計算を書けます</div>
+</div>
+<div id="tools" class="hide">
+    <button class="tb on" id="tPen" aria-label="ペン"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 6l3 3"/></svg></button>
+    <div class="seg" id="penSeg">
+      <button data-w="1.6"><i style="height:2px"></i></button>
+      <button data-w="2.2" class="on"><i style="height:3px"></i></button>
+      <button data-w="3.4"><i style="height:5px"></i></button>
     </div>
-    <div class="menu-items">
-      <button class="menu-item active" id="menu-grammar">
-        <span class="menu-icon">📚</span>
-        <div>
-          <div class="menu-item-title">文法</div>
-          <div class="menu-item-sub">不定詞・動名詞 STEP 04-06</div>
-        </div>
-      </button>
-      <button class="menu-item" id="menu-eigo">
-        <span class="menu-icon">🌏</span>
-        <div>
-          <div class="menu-item-title">英コミュ</div>
-          <div class="menu-item-sub">文章・文法解説</div>
-        </div>
-      </button>
-      <button class="menu-item" id="menu-vocab">
-        <span class="menu-icon">📝</span>
-        <div>
-          <div class="menu-item-title">英コミュの単語</div>
-          <div class="menu-item-sub">単語学習アプリ</div>
-        </div>
-      </button>
-    </div>
-  </div>
-  <div class="menu-close-area" id="menu-close-area"></div>
+    <button class="tb" id="tEra" aria-label="消しゴム"><svg viewBox="0 0 24 24"><path d="M8 20h11"/><path d="M15.5 4.5l4 4L9 19H5v-4z"/></svg></button>
+    <button class="tb" id="tUndo" aria-label="戻す"><svg viewBox="0 0 24 24"><path d="M9 5L4 10l5 5"/><path d="M4 10h9a6 6 0 010 12h-3"/></svg></button>
+    <button class="tb" id="tRedo" aria-label="やり直す"><svg viewBox="0 0 24 24"><path d="M15 5l5 5-5 5"/><path d="M20 10h-9a6 6 0 000 12h3"/></svg></button>
+    <button class="tb" id="tClr" aria-label="全部消す"><svg viewBox="0 0 24 24"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1 13h10l1-13"/></svg></button>
+  <button class="tb done" id="tDone">書き終わり</button>
 </div>
 
-<!-- ════ HOME ════ -->
-<div id="screen-home" class="screen active">
-  <div class="home-hero">
-    <button class="hamburger-btn" id="hamburger-btn" aria-label="メニュー">
-      <span></span><span></span><span></span>
-    </button>
-    <h1>英文法マスター</h1>
-    <p>STEP 04・05・06: 不定詞と動名詞 — 大学入試対策</p>
+<div id="back"></div>
+
+<!-- 解答・解説 -->
+<div class="sheet" id="ansSheet">
+  <div class="grip"><i></i></div>
+  <div class="sh">解答・解説<button class="x" data-close="1">×</button></div>
+  <div class="ansq mq" id="ansQ"></div>
+  <div id="ansInput">
+    <div class="field" id="field"></div>
+    <div class="hintline"><span id="hintLine"></span><button class="lnk" id="howBtn">書き方 ▾</button><button class="lnk" id="clrIn">消す</button><button class="lnk" id="revealBtn">答えを見る</button></div>
+    <div class="how hide" id="how">
+      <span><b>x<sup>2</sup></b><span>x^2</span></span>
+      <span><b>a<sup>5/3</sup></b><span>a^(5/3)</span></span>
+      <span><b>&radic;<span style="border-top:1px solid">2</span></b><span>√2</span></span>
+      <span><b><span class="rt"><span class="ri">3</span>&radic;<span class="rb">5</span></span></b><span>ⁿ√ で 3 と 5</span></span>
+      <span><b>log<sub>2</sub>8</b><span>log で 2 と 8</span></span>
+      <span><b><span class="fr"><span class="fn">1</span><span class="fd">4</span></span></b><span>4 → 分の → 1</span></span>
+      <span><b>x&le;3</b><span>≦ キー</span></span>
+      <span><b>x&lt;-1, 2&lt;x</b><span>, で区切る</span></span>
+      <span class="hb">タップで閉じる</span>
+    </div>
+    <div class="chbox hide" id="choices"></div>
+    <div class="kb" id="kb"></div>
   </div>
-  <div class="home-body">
-    <p class="sec-lbl">出題単元を選択</p>
-    <div class="topic-row">
-      <button class="topic-btn on" data-topic="both">
-        不定詞と動名詞
-        <span class="topic-sub" id="topic-cnt-both">-問</span>
-      </button>
-      <button class="topic-btn on" data-topic="infin">
-        不定詞
-        <span class="topic-sub" id="topic-cnt-infin">-問</span>
-      </button>
-      <button class="topic-btn on" data-topic="gerund">
-        動名詞
-        <span class="topic-sub" id="topic-cnt-gerund">-問</span>
-      </button>
-    </div>
-
-    <p class="sec-lbl mt">出題形式を選択</p>
-
-    <div class="sec-card on" data-sec="frames">
-      <div class="chk"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5L5 9.5L11 3.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div class="sec-info"><div class="sec-name">FRAME（例題）</div><div class="sec-sub" id="sub-frames">- 問 · 不定詞・動名詞の基本パターン</div></div>
-      <span class="sec-tag tag-f">基礎</span>
-    </div>
-
-    <div class="sec-card on" data-sec="exA">
-      <div class="chk"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5L5 9.5L11 3.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div class="sec-info"><div class="sec-name">Exercise A（空所補充）</div><div class="sec-sub" id="sub-exA">- 問 · 最も適切な語句を選ぶ</div></div>
-      <span class="sec-tag tag-a">選択</span>
-    </div>
-
-    <div class="sec-card on" data-sec="exB">
-      <div class="chk"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5L5 9.5L11 3.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div class="sec-info"><div class="sec-name">Exercise B（誤文訂正）</div><div class="sec-sub" id="sub-exB">- 問 · 誤りを含む番号を選ぶ</div></div>
-      <span class="sec-tag tag-b">誤文</span>
-    </div>
-
-    <div class="sec-card on" data-sec="exC">
-      <div class="chk"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2 6.5L5 9.5L11 3.5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-      <div class="sec-info"><div class="sec-name">Exercise C（整序英作文）</div><div class="sec-sub" id="sub-exC">- 問 · 語句を並べかえる（確認問題）</div></div>
-      <span class="sec-tag tag-c">整序</span>
-    </div>
-
-    <button class="start-btn" id="start-btn">スタート →</button>
-    <button class="btn-wrong" id="home-retry-wrong-btn" style="display:none"></button>
-    <div id="prev-card" class="prev-card" style="display:none">
-      <span class="lbl">前回のスコア</span>
-      <span class="val" id="prev-val"></span>
-    </div>
-  </div>
+  <div class="res hide" id="ansRes"></div>
 </div>
 
-<!-- ════ QUIZ ════ -->
-<div id="screen-quiz" class="screen">
-  <div class="quiz-top">
-    <button class="back-btn" id="quiz-back">
-      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-        <path d="M14 17L8 11L14 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </button>
-    <button class="prog-wrap" id="prog-trigger" aria-label="問題一覧" aria-expanded="false">
-      <div class="prog-txt">
-        <span id="prog-txt">1 / 43</span>
-        <svg class="prog-caret" width="11" height="11" viewBox="0 0 12 12" fill="none"><path d="M3 5L6 8L9 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
-    </button>
-    <button class="hamburger-btn-sm" id="hamburger-quiz" aria-label="メニュー">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-
-  <!-- 問題一覧プルダウン -->
-  <div class="qlist-backdrop" id="qlist-backdrop"></div>
-  <div class="qlist-panel" id="qlist-panel">
-    <div class="qlist-head">
-      <span class="qlist-title">問題一覧</span>
-      <div class="qlist-legend">
-        <span><i class="lg ok"></i>正解</span>
-        <span><i class="lg ng"></i>不正解</span>
-        <span><i class="lg un"></i>未回答</span>
-      </div>
-    </div>
-    <div class="qlist-grid" id="qlist-grid"></div>
-  </div>
-
-  <div class="quiz-body">
-    <div class="q-meta">
-      <span class="q-tag" id="q-tag"></span>
-      <span class="q-important" id="q-important">★ 重要</span>
-      <span class="q-src" id="q-src"></span>
-    </div>
-
-    <div class="q-card">
-      <div class="q-text" id="q-text"></div>
-      <div class="q-ja"  id="q-ja"></div>
-    </div>
-
-    <!-- FRAME / ExA options -->
-    <div class="opts" id="opts"></div>
-
-    <!-- ExB zone -->
-    <div id="exb-zone" style="display:none">
-      <!-- Phase 1: select number + type correction -->
-      <div id="exb-phase1">
-        <p class="exb-inst">誤りを含む箇所をタップしてください</p>
-        <div id="exb-input-wrap" style="display:none">
-          <input id="exb-input" class="exb-input-field" type="text"
-            autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-            placeholder="正しい形を入力...">
-        </div>
-        <button class="check-btn" id="exb-check-btn" disabled>確認する</button>
-        <button class="exb-reveal-btn" id="exb-reveal-btn">答えを見る</button>
-      </div>
-      <!-- Phase 2: comparison + self-judge -->
-      <div id="exb-phase2" style="display:none">
-        <div id="exb-num-result" class="exb-num-result"></div>
-        <div class="exb-compare">
-          <div class="exb-compare-row">
-            <span class="exb-cmp-lbl">あなた</span>
-            <span id="exb-typed-val" class="exb-cmp-val"></span>
-          </div>
-          <div class="exb-compare-row">
-            <span class="exb-cmp-lbl">正解</span>
-            <span id="exb-correct-val" class="exb-cmp-val ok"></span>
-          </div>
-        </div>
-        <p class="exb-self-q">テキストは合ってますか？</p>
-        <div class="exb-self-btns">
-          <button id="exb-self-ok" class="exb-self-btn ok">○ 合ってた</button>
-          <button id="exb-self-ng" class="exb-self-btn ng">✗ 違った</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ExC Duolingo zone -->
-    <div id="exc-zone" style="display:none">
-      <div class="exc-context" id="exc-ctx"></div>
-      <div class="build-area" id="build-area">
-        <span class="build-hint" id="build-hint">ここに並べてください</span>
-      </div>
-      <div class="pool-area" id="pool-area"></div>
-      <button class="check-btn" id="check-btn" disabled>確認する</button>
-    </div>
-
-    <!-- Fill zone (言い換え・空所補充：記述式) -->
-    <div id="fill-zone" style="display:none">
-      <div class="exc-context" id="fill-ctx"></div>
-      <input id="fill-input" class="exb-input-field" type="text"
-        autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false"
-        placeholder="空所に入る語を入力...">
-      <button class="check-btn" id="fill-check-btn" disabled>確認する</button>
-      <button class="exb-reveal-btn" id="fill-reveal-btn">答えを見る</button>
-    </div>
-
-    <!-- Feedback (choice & exB) -->
-    <div class="fb-card" id="fb-card">
-      <div class="fb-head"      id="fb-head"></div>
-      <div class="fb-fix"       id="fb-fix"></div>
-      <div class="fb-corrected" id="fb-corrected"></div>
-      <div class="fb-tra"       id="fb-tra"></div>
-      <div class="fb-exp"       id="fb-exp"></div>
-    </div>
-
-    <button class="next-btn" id="next-btn">次の問題 →</button>
-    <button class="prev-q-btn" id="prev-q-btn" style="display:none">← 前の問題に戻る</button>
-  </div>
-
-  <!-- トラックパッド（選択問題用） -->
-  <div class="trackpad" id="ans-pad" style="display:none">
-    <div class="trackpad-surface" id="tp-surface"></div>
-    <div class="trackpad-hint" id="tp-hint">スライドで選択 · 離して決定</div>
-  </div>
+<!-- 範囲 -->
+<div class="sheet" id="scopeSheet">
+  <div class="grip"><i></i></div>
+  <div class="sh">範囲をえらぶ<button class="x" data-close="1">×</button></div>
+  <div class="sbody" id="scopeBody"></div>
 </div>
 
-<!-- ════ RESULTS ════ -->
-<div id="screen-results" class="screen">
-  <div class="res-hero">
-    <button class="hamburger-btn" id="hamburger-res" aria-label="メニュー">
-      <span></span><span></span><span></span>
-    </button>
-    <h2 id="res-h2">クイズ完了！</h2>
-    <div class="score-ring">
-      <div class="score-big" id="score-big">—</div>
-      <div class="score-pct" id="score-pct"></div>
-    </div>
-  </div>
-  <div class="res-body">
-    <p class="sec-lbl" style="margin-top:0">セクション別スコア</p>
-    <div id="sec-results"></div>
-    <button id="retry-wrong-btn" class="btn-wrong" style="display:none">✗ 間違えた問題のみ</button>
-    <div class="res-acts">
-      <button class="btn-sec" id="retry-btn">もう一度</button>
-      <button class="btn-pri" id="home-btn">ホームへ</button>
-    </div>
-  </div>
+<!-- 記録 -->
+<div class="sheet" id="statSheet">
+  <div class="grip"><i></i></div>
+  <div class="sh">学習の記録<button class="x" data-close="1">×</button></div>
+  <div class="sbody" id="statBody"></div>
 </div>
 
-<!-- ════ EIGO ════ -->
-<div id="screen-eigo" class="screen">
-  <div class="eigo-top">
-    <h2>英コミュ</h2>
-    <button class="hamburger-btn-sm" id="hamburger-eigo" aria-label="メニュー">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-  <div class="eigo-body" id="eigo-body"></div>
+<!-- はじめの案内 -->
+<div id="intro" class="hide">
+  <h1>指数・対数フィード</h1>
+  <p>上下にスワイプして、1問ずつ解いていきます。</p>
+  <ul>
+    <li><b>スワイプ</b>　次の問題へ（記録は残りません）</li>
+    <li><b>書く</b>　まん中のボタンで計算スペース</li>
+    <li><b>解答</b>　吹き出しから答えと解説</li>
+    <li><b>範囲</b>　いちばん上のタブで切りかえ</li>
+  </ul>
+  <button class="pbtn" id="introGo">はじめる</button>
 </div>
 
+<script src="./data.js"></script>
+<script>
+"use strict";
 
-<script src="js/data.js?v=12"></script>
-<script src="js/app.js?v=24"></script>
+/* =======================================================================
+   問題の下ごしらえ
+   ======================================================================= */
+function qhash(s){
+  let h = 5381;
+  for(let i=0;i<s.length;i++) h = ((h*33) ^ s.charCodeAt(i)) >>> 0;
+  return h.toString(36);
+}
+const ALL = [];
+TOPICS.forEach(t=>{
+  t.qs.forEach(q=>{
+    q.id = t.id+'-'+qhash(q.q);
+    q.topic = t.id;
+    q.tname = t.name;
+    ALL.push(q);
+  });
+});
+const BYID = {}; ALL.forEach(q=>BYID[q.id]=q);
+const BYTOPIC = {}; TOPICS.forEach(t=>BYTOPIC[t.id]=t);
+/* タブに出す短い名前（「教科書｜累乗根」→「累乗根」） */
+function shortName(t){ return t.name.replace(/^教科書｜/,''); }
+
+/* =======================================================================
+   数式マークアップ → HTML
+   ======================================================================= */
+const FR_RT  = '<span class="rt">(?:<span class="ri">[^<]*<\\/span>)?&radic;<span class="rb">[^<]*<\\/span><\\/span>';
+const FR_TOK = '(?:\\([^()]*\\)|' + FR_RT + '|[0-9a-z.□\\u0001]+)'
+             + '(?:<sup>[^<]*<\\/sup>|<sub>[^<]*<\\/sub>)?';
+const FR_RE  = new RegExp('('+FR_TOK+')\\/('+FR_TOK+')', 'g');
+function esc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmt(s){
+  return esc(String(s))
+    .replace(/\^\(([^()]*)\)/g,'^{$1}')
+    .replace(/√\[(.+?)\]\{(.+?)\}/g,'<span class="rt"><span class="ri">$1</span>&radic;<span class="rb">$2</span></span>')
+    .replace(/√\{(.+?)\}/g,'<span class="rt">&radic;<span class="rb">$1</span></span>')
+    .replace(/\^\{(.+?)\}/g,'<sup>$1</sup>')
+    .replace(/_\{(.+?)\}/g,'<sub>$1</sub>')
+    .replace(/\^(-?[0-9a-zA-Z])/g,'<sup>$1</sup>')
+    .replace(/_(-?[0-9a-zA-Z])/g,'<sub>$1</sub>')
+    .replace(FR_RE, (m,a,b)=>'<span class="fr"><span class="fn">'+a+'</span><span class="fd">'+b+'</span></span>');
+}
+
+/* =======================================================================
+   解答の正規化と判定（本編アプリと同じ規則）
+   ======================================================================= */
+const FLIP = {'<':'>','>':'<','≦':'≧','≧':'≦'};
+function flipIneq(s){
+  if(!/[<>≦≧]/.test(s)) return s;
+  return s.split(/([<>≦≧])/).reverse().map(p=>FLIP[p]||p).join('');
+}
+const FBAR = '⁄';
+const CARET = '\u0001';
+const TOKCH = '[0-9a-z.^\u0001]';
+function tokenL(s, i){
+  if(s[i-1]===')'){
+    let d=0;
+    for(let j=i-1;j>=0;j--){
+      if(s[j]===')') d++;
+      else if(s[j]==='('){ d--; if(d===0) return j; }
+    }
+    return i-1;
+  }
+  let j=i-1;
+  while(j>=0 && new RegExp(TOKCH).test(s[j])) j--;
+  return j+1;
+}
+function tokenR(s, i){
+  if(s[i+1]==='('){
+    let d=0;
+    for(let j=i+1;j<s.length;j++){
+      if(s[j]==='(') d++;
+      else if(s[j]===')'){ d--; if(d===0) return j+1; }
+    }
+    return i+2;
+  }
+  let j=i+1;
+  while(j<s.length && new RegExp(TOKCH).test(s[j])) j++;
+  return j;
+}
+function unfrac(t){
+  for(let guard=0; guard<40; guard++){
+    const i = t.indexOf(FBAR);
+    if(i<0) break;
+    const a = tokenL(t, i), bEnd = tokenR(t, i);
+    const den = t.slice(a, i), num = t.slice(i+1, bEnd);
+    if(den==='' || num===''){ t = t.slice(0,i) + '/' + t.slice(i+1); continue; }
+    t = t.slice(0,a) + num + '/' + den + t.slice(bEnd);
+  }
+  return t;
+}
+function nz(s){
+  let t = String(s==null?'':s);
+  t = t.replace(/[Ａ-Ｚａ-ｚ０-９]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xFEE0));
+  t = t.replace(/（/g,'(').replace(/）/g,')');
+  t = t.replace(/[，、]/g,',').replace(/．/g,'.');
+  t = t.replace(/[①②③④⑤]/g, c=>String('①②③④⑤'.indexOf(c)+1));
+  t = t.replace(/[−–—‐ー]/g,'-');
+  t = t.replace(/[\s　]/g,'');
+  t = t.toLowerCase();
+  t = t.replace(/sqrt/g,'√').replace(/cbrt/g,'∛');
+  t = t.replace(/log_/g,'log');
+  t = t.replace(/∛\(([^()]*)\)/g,'√[3]{$1}').replace(/∛([0-9a-z.]+)/g,'√[3]{$1}');
+  t = t.replace(/√\[([^\]]+)\]([0-9a-z.]+)/g,'√[$1]{$2}');
+  t = t.replace(/√(?!\[|\{)([0-9a-z.]+)/g,'√{$1}');
+  t = t.replace(/√\[2\]\{/g,'√{');
+  t = t.replace(/＜/g,'<').replace(/＞/g,'>').replace(/＝/g,'=').replace(/／/g,'/');
+  if(t.indexOf(FBAR)>=0) t = unfrac(t);
+  t = t.replace(/>=|≥/g,'≧').replace(/<=|≤/g,'≦');
+  t = t.replace(/[*・×⋅･]/g,'');
+  t = t.replace(/÷/g,'/');
+  t = t.replace(/桁$/,'').replace(/位$/,'').replace(/^小数第/,'');
+  if(/^[xyn]=/.test(t) && !/[<>≦≧]/.test(t)) t = t.slice(2);
+  if(t.indexOf(',')>=0){
+    t = t.split(',').filter(v=>v!=='').map(v=>{
+      const f = flipIneq(v);
+      return f<v ? f : v;
+    }).sort().join(',');
+  }
+  return t;
+}
+function noParen(s){ return s.replace(/[()]/g,''); }
+function numOf(s){
+  const m = /^(-?\d+(?:\.\d+)?)(?:\/(-?\d+(?:\.\d+)?))?$/.exec(s);
+  if(!m) return null;
+  const d = m[2]!==undefined ? parseFloat(m[2]) : 1;
+  if(d===0) return null;
+  return parseFloat(m[1])/d;
+}
+function judge(input, list){
+  const a = nz(input);
+  if(a==='') return false;
+  const av = [a, flipIneq(a)];
+  for(let i=0;i<list.length;i++){
+    const b = nz(list[i]);
+    for(let j=0;j<av.length;j++){
+      if(av[j]===b) return true;
+      if(noParen(av[j])===noParen(b)) return true;
+    }
+    const na=numOf(a), nb=numOf(b);
+    if(na!==null && nb!==null && Math.abs(na-nb)<1e-9) return true;
+  }
+  return false;
+}
+
+/* =======================================================================
+   記録（localStorage）
+
+   本編アプリ（/tiri/）とは別のキーを使う。GitHub Pages はリポジトリが
+   違っても ahaaaaa34.github.io という同じ置き場所になるので、
+   名前を分けておかないと混ざる。逆に言えば、名前さえ重ならなければ
+   どちらの記録も相手から見えないし消えない。
+   ======================================================================= */
+const K = {
+  st   : 'feed_stats_v1',    // {qid:{c:正解数, w:間違い数, p:要復習}}
+  fav  : 'feed_fav_v1',      // {qid:1}
+  scope: 'feed_scope_v1',    // いま選んでいる範囲
+  shuf : 'feed_shuffle_v1',  // 出題順
+  seen : 'feed_seen_v1'      // 案内を出したか
+};
+function readJSON(k, dflt){
+  try{
+    const r = localStorage.getItem(k);
+    if(!r) return dflt;
+    const v = JSON.parse(r);
+    return (v && typeof v==='object') ? v : dflt;
+  }catch(e){ return dflt; }
+}
+function writeJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+
+let ST  = readJSON(K.st, {});
+let FAV = readJSON(K.fav, {});
+/* 差し替えられた問題の記録が残り続けないよう、いまない問題は捨てる */
+(function(){
+  let drop = false;
+  for(const k in ST){ if(!BYID[k] || !ST[k] || typeof ST[k]!=='object'){ delete ST[k]; drop = true; } }
+  for(const k in FAV){ if(!BYID[k]){ delete FAV[k]; drop = true; } }
+  if(drop){ writeJSON(K.st, ST); writeJSON(K.fav, FAV); }
+})();
+function saveST(){ writeJSON(K.st, ST); }
+function rec(id){ if(!ST[id]) ST[id] = {c:0,w:0,p:0}; return ST[id]; }
+function tries(id){ const r=ST[id]; return r ? (r.c||0)+(r.w||0) : 0; }
+function isFav(id){ return !!FAV[id]; }
+function isPending(id){ return ST[id] ? ST[id].p===1 : false; }
+function totalFav(){ return Object.keys(FAV).length; }
+function totalPending(){ let n=0; for(const k in ST) if(ST[k].p===1) n++; return n; }
+function totalDone(){ let n=0; for(const k in ST) if(ST[k].c>0) n++; return n; }
+
+/* =======================================================================
+   状態
+   ======================================================================= */
+const $ = id => document.getElementById(id);
+let SCOPE = '__all__';
+try{ const v = localStorage.getItem(K.scope); if(v==='__all__'||v==='__fav__'||v==='__todo__'||BYTOPIC[v]) SCOPE = v; }catch(e){}
+let SHUF = false;
+try{ SHUF = localStorage.getItem(K.shuf)==='1'; }catch(e){}
+
+let queue = [];      // 出題ぶんの問題（下に伸びていく）
+let CUR   = 0;       // いま見ているカード
+const answered = {}; // このセッションで答えたカード（カード番号ごと）
+
+function poolOf(){
+  if(SCOPE==='__all__') return ALL.slice();
+  if(SCOPE==='__fav__') return ALL.filter(q=>isFav(q.id));
+  if(SCOPE==='__todo__') return ALL.filter(q=>isPending(q.id));
+  return ALL.filter(q=>q.topic===SCOPE);
+}
+function shuffled(a){
+  const b = a.slice();
+  for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); const t=b[i]; b[i]=b[j]; b[j]=t; }
+  return b;
+}
+let pool = [];
+function extend(){
+  if(!pool.length) return;
+  const pass = SHUF ? shuffled(pool) : pool.slice();
+  /* 同じ問題が続けて出ないように、つなぎ目だけずらす */
+  if(SHUF && queue.length && pass.length>1 && pass[0].id===queue[queue.length-1].id){
+    const t = pass.shift(); pass.splice(1,0,t);
+  }
+  queue = queue.concat(pass);
+}
+
+/* =======================================================================
+   カードを作る
+   ======================================================================= */
+const feed = $('feed');
+let rendered = 0;
+
+function svgHeart(){ return '<svg viewBox="0 0 24 24"><path d="M12 21s-7.5-4.7-9.6-9C.8 8.4 2.6 4.7 6.2 4.2 8.5 3.9 10.8 5 12 7c1.2-2 3.5-3.1 5.8-2.8 3.6.5 5.4 4.2 3.8 7.8-2.1 4.3-9.6 9-9.6 9z"/></svg>'; }
+function svgComment(){ return '<svg viewBox="0 0 24 24"><path d="M12 3c5.5 0 10 3.4 10 7.6 0 4.2-4.5 7.6-10 7.6-.9 0-1.8-.1-2.6-.3L4 21l1.2-3.6C3.2 16 2 13.4 2 10.6 2 6.4 6.5 3 12 3z"/></svg>'; }
+function svgMark(){ return '<svg viewBox="0 0 24 24"><path d="M6 3h12a1 1 0 011 1v17l-7-4-7 4V4a1 1 0 011-1z"/></svg>'; }
+function svgChart(){ return '<svg viewBox="0 0 24 24"><path d="M4 19h16v2H4zM5 10h3v7H5zM10.5 5h3v12h-3zM16 13h3v4h-3z"/></svg>'; }
+function ringHTML(rate){
+  const deg = Math.round(rate*360);
+  return '<span class="ring" style="background:conic-gradient(var(--ok) 0 '+deg+'deg, rgba(255,255,255,.18) '+deg+'deg 360deg)"></span>';
+}
+
+function cardHTML(q, n){
+  const t = BYTOPIC[q.topic];
+  const list = ALL.filter(x=>x.topic===q.topic);
+  let done = 0; list.forEach(x=>{ if(ST[x.id] && ST[x.id].c>0) done++; });
+  const rate = list.length ? done/list.length : 0;
+  const badge = shortName(t).slice(0,3);
+
+  return ''+
+  '<button class="void" data-a="write">'+
+    '<svg viewBox="0 0 24 24"><path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 6l3 3"/></svg>'+
+    'タップして計算スペース'+
+  '</button>'+
+  '<div class="stamp hide"></div>'+
+  '<div class="rail">'+
+    '<button class="ri av" data-a="scope">'+
+      '<span class="ava">'+ringHTML(rate)+'<span class="ph">'+esc(badge)+'</span><span class="pl">＋</span></span>'+
+    '</button>'+
+    '<button class="ri'+(isFav(q.id)?' on':'')+'" data-a="fav">'+svgHeart()+'<span class="n">'+totalFav()+'</span></button>'+
+    '<button class="ri" data-a="answer">'+svgComment()+'<span class="n">'+tries(q.id)+'</span></button>'+
+    '<button class="ri cy'+(isPending(q.id)?' on':'')+'" data-a="todo">'+svgMark()+'<span class="n">'+totalPending()+'</span></button>'+
+    '<button class="ri" data-a="stats">'+svgChart()+'<span class="n">'+totalDone()+'</span></button>'+
+    '<button class="ri ord'+(SHUF?'':' stop')+'" data-a="shuffle">'+
+      '<span class="disc"><svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="17.5" cy="16" r="2.6"/></svg></span>'+
+      '<span class="n">'+(SHUF?'ランダム':'じゅんばん')+'</span></button>'+
+  '</div>'+
+  '<div class="meta">'+
+    '<div class="who">'+n+'問目</div>'+
+    '<div class="cap mq">'+fmt(q.q)+'</div>'+
+    (q.g ? '<div class="given">ただし <b>'+fmt(q.g)+'</b></div>' : '')+
+    '<div class="tags">#'+esc(shortName(t).replace(/\s/g,''))+' #'+(q.topic.indexOf('tb-')===0?'教科書':'オリジナル')+(q.self?' #証明':'')+'</div>'+
+    '<div class="lnks"><button class="lnk" data-a="reveal">解答・解説</button></div>'+
+  '</div>';
+}
+
+const io = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting && e.intersectionRatio>=.6) setCur(+e.target.dataset.i);
+  });
+}, {threshold:[.6]});
+
+function addCards(upto){
+  while(rendered < upto){
+    if(rendered >= queue.length) extend();
+    if(rendered >= queue.length) return;      /* 出す問題がない（範囲が空） */
+    const q = queue[rendered];
+    const el = document.createElement('section');
+    el.className = 'card';
+    el.dataset.i = rendered;
+    el.innerHTML = cardHTML(q, rendered+1);
+    feed.appendChild(el);
+    io.observe(el);
+    rendered++;
+  }
+}
+
+function setCur(i){
+  if(i===CUR && rendered>i+3) return;
+  CUR = i;
+  addCards(i + 6);                 /* 先の分をすこし作っておく */
+  usePad(queue[i] ? queue[i].id : 'x');
+}
+
+function rebuild(){
+  pool = poolOf();
+  queue = [];
+  rendered = 0;
+  io.disconnect();
+  feed.innerHTML = '';
+  CUR = 0;
+  for(const k in answered) delete answered[k];
+  resetPadStore();
+  setWrite(false);
+  if(!pool.length){
+    const el = document.createElement('section');
+    el.className = 'card';
+    el.dataset.i = 0;
+    el.innerHTML = '<div class="meta"><div class="who">0問</div>'+
+      '<div class="cap" style="font-family:inherit;font-size:15px">この範囲にはまだ問題がありません。'+
+      (SCOPE==='__fav__' ? 'ハートを押した問題がここに集まります。'
+       : SCOPE==='__todo__' ? '間違えた問題がここに集まります。' : '')+
+      '</div>'+
+      '<div class="lnks"><button class="lnk" data-a="scope">範囲をえらぶ</button></div></div>';
+    feed.appendChild(el);
+    return;
+  }
+  addCards(6);
+  feed.scrollTop = 0;
+}
+
+/* カードの表示だけを今の記録に合わせて描き直す */
+function refreshCard(i){
+  const el = feed.querySelector('.card[data-i="'+i+'"]');
+  const q = queue[i];
+  if(!el || !q) return;
+  const fav = el.querySelector('[data-a="fav"]'), td = el.querySelector('[data-a="todo"]');
+  const ans = el.querySelector('.ri[data-a="answer"]'), stt = el.querySelector('[data-a="stats"]');
+  if(fav){ fav.classList.toggle('on', isFav(q.id)); fav.querySelector('.n').textContent = totalFav(); }
+  if(td){ td.classList.toggle('on', isPending(q.id)); td.querySelector('.n').textContent = totalPending(); }
+  if(ans) ans.querySelector('.n').textContent = tries(q.id);
+  if(stt) stt.querySelector('.n').textContent = totalDone();
+}
+function setStamp(i, kind){
+  const el = feed.querySelector('.card[data-i="'+i+'"]');
+  if(!el) return;
+  const s = el.querySelector('.stamp');
+  if(!s) return;
+  const tpl = {
+    ok:['ok','<path d="M5 12.5l4.5 4.5L19 7"/>','正解'],
+    ng:['ng','<path d="M6 6l12 12M18 6L6 18"/>','不正解'],
+    sk:['sk','<path d="M6 5l9 7-9 7z"/><path d="M18 5v14"/>','答えを見た']
+  }[kind];
+  if(!tpl) return;
+  s.className = 'stamp '+tpl[0];
+  s.innerHTML = '<svg viewBox="0 0 24 24">'+tpl[1]+'</svg>'+tpl[2];
+}
+
+/* =======================================================================
+   上のタブ
+   ======================================================================= */
+function buildTabs(){
+  const tabs = $('tabs');
+  tabs.innerHTML = '';
+  const items = [{id:'__all__', name:'すべて'}];
+  if(totalPending()) items.push({id:'__todo__', name:'要復習', dot:true});
+  if(totalFav()) items.push({id:'__fav__', name:'お気に入り'});
+  GROUPS.forEach(g=>g.ids.forEach(id=>{
+    if(BYTOPIC[id]) items.push({id:id, name:shortName(BYTOPIC[id])});
+  }));
+  items.forEach(it=>{
+    const b = document.createElement('button');
+    b.className = 'tab' + (it.id===SCOPE ? ' on' : '');
+    b.dataset.id = it.id;
+    b.innerHTML = esc(it.name) + (it.dot ? '<span class="dot"></span>' : '');
+    tabs.appendChild(b);
+  });
+  const on = tabs.querySelector('.tab.on');
+  if(on) tabs.scrollLeft = on.offsetLeft - tabs.clientWidth/2 + on.offsetWidth/2;
+}
+$('tabs').addEventListener('click', e=>{
+  const b = e.target.closest('.tab');
+  if(!b) return;
+  setScope(b.dataset.id);
+});
+function setScope(id){
+  SCOPE = id;
+  try{ localStorage.setItem(K.scope, id); }catch(e){}
+  buildTabs();
+  rebuild();
+}
+
+/* =======================================================================
+   シート
+   ======================================================================= */
+function openSheet(el){ setWrite(false); $('back').classList.add('on'); el.classList.add('on'); }
+function closeSheets(){
+  $('back').classList.remove('on');
+  ['ansSheet','scopeSheet','statSheet'].forEach(id=>{
+    const el = $(id);
+    el.classList.remove('on');
+    el.style.transform = '';
+  });
+}
+$('back').addEventListener('click', closeSheets);
+document.addEventListener('click', e=>{
+  const x = e.target.closest('[data-close]');
+  if(x) closeSheets();
+});
+/* 下にドラッグして閉じる */
+function dragToClose(sheet){
+  let sy=0, dy=0, on=false;
+  sheet.addEventListener('pointerdown', e=>{
+    if(!e.target.closest('.grip, .sh, .ansq')) return;
+    if(e.target.closest('.x')) return;
+    on = true; sy = e.clientY; dy = 0;
+    sheet.style.transition = 'none';
+    sheet.setPointerCapture(e.pointerId);
+  });
+  sheet.addEventListener('pointermove', e=>{
+    if(!on) return;
+    dy = Math.max(0, e.clientY - sy);
+    sheet.style.transform = 'translateY('+dy+'px)';
+  });
+  const drop = ()=>{
+    if(!on) return;
+    on = false;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if(dy > 90) closeSheets();
+  };
+  sheet.addEventListener('pointerup', drop);
+  sheet.addEventListener('pointercancel', drop);
+}
+['ansSheet','scopeSheet','statSheet'].forEach(id=>dragToClose($(id)));
+
+/* =======================================================================
+   専用キーボードと解答入力（本編アプリと同じ打ち方）
+   ======================================================================= */
+const KEYS = [
+  [{t:'1'},{t:'2'},{t:'3'},{t:'('},{t:')'},{f:'bs',svg:'<path d="M9 5h11v14H9L3 12z"/><path d="M14.5 9.5l-4 5M10.5 9.5l4 5"/>'}],
+  [{t:'4'},{t:'5'},{t:'6'},{t:'⁄',lbl:'分の',cls:'sm'},{t:'^'},{f:'l',svg:'<path d="M14 6l-6 6 6 6"/>'}],
+  [{t:'7'},{t:'8'},{t:'9'},{t:'√'},{t:','},{f:'r',svg:'<path d="M10 6l6 6-6 6"/>'}],
+  [{t:'0'},{t:'.'},{t:'-'},{t:'+'},{t:'ⁿ√',cls:'sm'},{t:'='}],
+  [{t:'x'},{t:'y'},{t:'a'},{t:'b'},{t:'n'},{t:'log',cls:'sm'}],
+  [{t:'<'},{t:'>'},{t:'≦'},{t:'≧'},{f:'go'}]
+];
+function buildKB(){
+  const kb = $('kb');
+  kb.innerHTML = '';
+  KEYS.forEach(row=>row.forEach(k=>{
+    const b = document.createElement('button');
+    if(k.f==='go'){
+      b.className = 'k go'; b.textContent = '決定'; b.dataset.f = 'go';
+    }else if(k.f){
+      b.className = 'k fn';
+      b.innerHTML = '<svg viewBox="0 0 24 24">'+k.svg+'</svg>';
+      b.dataset.f = k.f;
+      b.setAttribute('aria-label', {bs:'1文字消す', l:'カーソルを左へ', r:'カーソルを右へ'}[k.f] || '');
+    }else{
+      b.className = 'k' + (k.cls?' '+k.cls:'');
+      b.textContent = k.lbl || k.t;
+      b.dataset.t = k.t;
+    }
+    kb.appendChild(b);
+  }));
+  kb.addEventListener('pointerdown', e=>{
+    const b = e.target.closest('.k');
+    if(!b) return;
+    e.preventDefault();
+    if(b.dataset.f) doFn(b.dataset.f);
+    else insert(b.dataset.t);
+  });
+}
+let IV = '', IC = 0;
+let pickMode = false;
+const BOX = '□';
+const LOG_TPL = 'log_'+BOX+'('+BOX+')';
+const RT_TPL  = '√['+BOX+']{'+BOX+'}';
+const EXITERS = '<>≦≧=,';
+function curQ(){ return queue[CUR]; }
+function resetInput(){
+  IV = ''; IC = 0;
+  $('field').classList.remove('err');
+  clearWarn();
+  paintField();
+}
+function escapeGroups(){ while(IC < IV.length && '}])'.indexOf(IV[IC]) >= 0) IC++; }
+function insert(t){
+  if(EXITERS.indexOf(t)>=0 && IV[IC]!==BOX) escapeGroups();
+  if(t==='log' || t==='ⁿ√'){
+    const tpl = t==='log' ? LOG_TPL : RT_TPL;
+    IV = IV.slice(0,IC) + tpl + IV.slice(IC);
+    IC = IV.indexOf(BOX, IC);
+  }else if(IV[IC]===BOX){
+    IV = IV.slice(0,IC) + t + IV.slice(IC+1);
+    IC += t.length;
+  }else{
+    IV = IV.slice(0,IC) + t + IV.slice(IC);
+    IC += t.length;
+  }
+  $('field').classList.remove('err');
+  clearWarn();
+  paintField();
+  buzz(4);
+}
+function nextBox(){
+  return IV.indexOf(BOX, IC+1)>=0 ? IV.indexOf(BOX, IC+1) : IV.indexOf(BOX);
+}
+function doFn(f){
+  if(f==='bs'){ if(IC>0){ IV = IV.slice(0,IC-1)+IV.slice(IC); IC--; } }
+  else if(f==='l'){ if(IC>0) IC--; }
+  else if(f==='r'){
+    const nb = nextBox();
+    if(nb>=0 && nb!==IC) IC = nb;
+    else if(IC<IV.length) IC++;
+  }
+  else if(f==='go'){ submit(); return; }
+  $('field').classList.remove('err');
+  clearWarn();
+  paintField();
+}
+function boxify(html){ return html.split(BOX).join('<span class="bx">'+BOX+'</span>'); }
+function preview(s){
+  let t = unfrac(String(s));
+  t = t.replace(/\^\(([^()]*)\)/g, '^{$1}');
+  t = t.replace(/√\(([^()]*)\)/g, '√{$1}');
+  t = t.replace(/√([\d\u0001]+(?:\/[\d\u0001]+)?|[a-z]\u0001?)/g, '√{$1}');
+  t = t.replace(/log_([\d□\u0001]+(?:\/[\d\u0001]+)?|[a-z]\u0001?)\(([^()]*)\)/g, 'log_{$1}$2');
+  t = t.replace(/log_([\d□\u0001]+(?:\/[\d\u0001]+)?|[a-z]\u0001?)/g, 'log_{$1}');
+  return boxify(fmt(t));
+}
+function paintField(){
+  const f = $('field');
+  if(IV===''){
+    f.innerHTML = pickMode
+      ? '<span class="ph">下から選んでください</span>'
+      : '<span class="caret"></span><span class="ph">ここに解答を入力</span>';
+  }else if(pickMode){
+    f.innerHTML = esc(IV);
+    return;
+  }else{
+    const withCaret = IV.slice(0,IC) + CARET + IV.slice(IC);
+    f.innerHTML = preview(withCaret).split(CARET).join('<span class="caret"></span>');
+  }
+  paintPreview();
+}
+function paintPreview(){
+  const h = $('hintLine');
+  if(h.classList.contains('warn')) return;
+  const q = curQ();
+  if(pickMode){ h.classList.remove('todo'); h.textContent = ''; return; }
+  if(IV.indexOf(BOX)>=0){
+    h.classList.add('todo');
+    h.textContent = IV[IC]===BOX ? '□ に入力してください' : '→ を押して次の □ へ';
+  }else{
+    h.classList.remove('todo');
+    h.textContent = (q && q.h) || '';
+  }
+}
+function warnInput(msg){
+  const h = $('hintLine');
+  h.textContent = msg;
+  h.classList.add('warn');
+  $('field').classList.add('err');
+  buzz([14,60,14]);
+}
+function clearWarn(){
+  const h = $('hintLine');
+  if(h.classList.contains('warn')){ h.classList.remove('warn'); paintPreview(); }
+}
+$('field').addEventListener('click', ()=>{ IC = IV.length; paintField(); });
+$('clrIn').addEventListener('click', ()=>{ IV=''; IC=0; $('field').classList.remove('err'); paintField(); });
+function showHow(on){
+  $('how').classList.toggle('hide', !on);
+  $('kb').classList.toggle('hide', on || pickMode);
+  $('howBtn').textContent = on ? '書き方 ▴' : '書き方 ▾';
+}
+$('howBtn').addEventListener('click', ()=>showHow($('how').classList.contains('hide')));
+$('how').addEventListener('click', ()=>showHow(false));
+$('revealBtn').addEventListener('click', reveal);
+buildKB();
+
+function buildChoices(q){
+  const box = $('choices');
+  box.innerHTML = '';
+  q.c.forEach(label=>{
+    const b = document.createElement('button');
+    b.className = 'ch' + (label===IV ? ' on' : '');
+    b.textContent = label;
+    b.addEventListener('click', ()=>{
+      IV = label; IC = IV.length;
+      Array.prototype.forEach.call(box.children, x=>x.classList.remove('on'));
+      b.classList.add('on');
+      $('field').classList.remove('err');
+      paintField();
+      buzz(4);
+    });
+    box.appendChild(b);
+  });
+  const go = document.createElement('button');
+  go.className = 'pbtn';
+  go.style.marginTop = '6px';
+  go.textContent = '決定';
+  go.addEventListener('click', submit);
+  box.appendChild(go);
+}
+
+/* =======================================================================
+   解答パネル（TikTok のコメント欄の場所）
+   ======================================================================= */
+function openAnswer(){
+  const q = curQ();
+  if(!q) return;
+  $('ansQ').innerHTML = fmt(q.q) + (q.g ? '<span class="g">ただし '+fmt(q.g)+'</span>' : '');
+  if(answered[CUR] && !answered[CUR].retry){   /* 一度答えたカードは結果をそのまま出す */
+    const a = answered[CUR];
+    openSheet($('ansSheet'));
+    if(q.self) showSelf(q, true); else showResult(q, a.ok, a.given, true);
+    return;
+  }
+  if(q.self){ openSheet($('ansSheet')); showSelf(q, false); return; }
+  $('ansInput').classList.remove('hide');
+  $('ansRes').classList.add('hide');
+  pickMode = !!q.c;
+  $('hintLine').classList.remove('warn');
+  $('hintLine').textContent = pickMode ? '' : (q.h || '');
+  $('howBtn').classList.toggle('hide', pickMode);
+  showHow(false);
+  $('choices').classList.toggle('hide', !pickMode);
+  $('field').classList.toggle('jp', pickMode);
+  if(pickMode) buildChoices(q);
+  resetInput();
+  openSheet($('ansSheet'));
+}
+
+function submit(){
+  const q = curQ();
+  if(!q || q.self) return;
+  if(nz(IV)===''){ warnInput('解答が入力されていません'); return; }
+  if(IV.indexOf(BOX)>=0){
+    warnInput(IV[IC]===BOX ? '□ がまだ空です。数字を押して埋めてください'
+                           : '□ が残っています。→ で移って埋めてください');
+    return;
+  }
+  const ok = judge(IV, q.a);
+  score(q, ok);
+  if(answered[CUR]) answered[CUR].retry = false;   /* 解き直しはここで終わり */
+  showResult(q, ok, IV, false);
+}
+
+/* ok: true=正解 / false=不正解 / null=答えを見ただけ（記録しない） */
+function score(q, ok){
+  if(answered[CUR]) return;                 /* 1枚につき最初の1回だけ記録 */
+  answered[CUR] = {ok:ok, given:IV};
+  if(ok===null){ setStamp(CUR,'sk'); return; }
+  const r = rec(q.id);
+  if(ok){ r.c++; r.p = 0; } else { r.w++; r.p = 1; }
+  saveST();
+  setStamp(CUR, ok ? 'ok' : 'ng');
+  refreshCard(CUR);
+  buildTabs();
+}
+
+const BTN_ARM = 450;
+function armBtns(box){
+  if(!box) return;
+  box.style.pointerEvents = 'none';
+  setTimeout(()=>{ box.style.pointerEvents = ''; }, BTN_ARM);
+}
+function shownAlts(list){
+  return list.slice(1).filter(a=>!/[<>≦≧]/.test(a) && !/[桁位]$/.test(a) && !/^小数第/.test(a));
+}
+function addBtn(box, label, ghost, fn){
+  const b = document.createElement('button');
+  b.className = 'pbtn' + (ghost?' ghost':'');
+  b.textContent = label;
+  b.addEventListener('click', fn);
+  box.appendChild(b);
+}
+function goNext(){
+  closeSheets();
+  const el = feed.querySelector('.card[data-i="'+(CUR+1)+'"]');
+  addCards(CUR + 6);
+  setTimeout(()=>{
+    const t = feed.querySelector('.card[data-i="'+(CUR+1)+'"]') || el;
+    if(t) t.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 180);
+}
+
+function showResult(q, ok, given, again){
+  $('ansInput').classList.add('hide');
+  const r = $('ansRes');
+  r.classList.remove('hide');
+
+  const mark = ok===null
+    ? '<div class="rmark sk"><svg viewBox="0 0 24 24"><path d="M6 5l9 7-9 7z"/><path d="M18 5v14"/></svg>答えを見た</div>'
+    : ok
+    ? '<div class="rmark ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>正解</div>'
+    : '<div class="rmark ng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>不正解</div>';
+
+  const your = (ok===false && given!=null && given!=='')
+    ? '<div class="ryour">あなたの解答　<b>'+esc(given)+'</b></div>'
+    : (ok===null ? '<div class="ryour">記録には残していません</div>' : '');
+
+  const alts = shownAlts(q.a || []);
+  const alt = alts.length
+    ? '<div class="rsub">'+alts.map(a=>'<span class="mq">'+fmt(a)+'</span>').join(' / ')+' でも正解</div>' : '';
+
+  r.innerHTML =
+    mark + your +
+    '<div class="rans'+(ok===false?' ngb':'')+'"><div class="lb">答え</div><div class="va mq">'+fmt(q.a[0])+'</div>'+alt+'</div>' +
+    (q.e ? '<div class="rexp">'+fmt(q.e)+'</div>' : '') +
+    '<div class="rbtns" id="resBtns"></div>';
+
+  const bt = $('resBtns');
+  if(ok===false && !again){
+    addBtn(bt, 'もう一度解く', true, ()=>{ answered[CUR].retry = true; openAnswer(); });
+  }
+  addBtn(bt, '次の問題へ', false, goNext);
+  if(ok!==null && !again) buzz(ok?8:[14,60,14]);
+  armBtns(bt);
+}
+
+/* 証明問題は照合できないので、模範解答を見せて自分で選んでもらう */
+function showSelf(q, again){
+  $('ansInput').classList.add('hide');
+  const r = $('ansRes');
+  r.classList.remove('hide');
+  const done = again && answered[CUR];
+  r.innerHTML =
+    (done ? (answered[CUR].ok
+        ? '<div class="rmark ok"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></svg>わかった</div>'
+        : '<div class="rmark ng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>わからなかった</div>') : '')+
+    '<div class="rans"><div class="lb">解答</div><div class="proof mq">'+fmt(q.e)+'</div></div>'+
+    (done ? '' : '<div class="selfask">自分の答案と見くらべて選んでください</div>')+
+    '<div class="rbtns" id="resBtns"></div>';
+  const bt = $('resBtns');
+  if(done){
+    addBtn(bt, '次の問題へ', false, goNext);
+  }else{
+    addBtn(bt, 'わからなかった', true, ()=>{ score(q, false); goNext(); });
+    addBtn(bt, 'わかった', false, ()=>{ score(q, true); goNext(); });
+  }
+  armBtns(bt);
+}
+
+/* 答えを見る。自分では解いていないので不正解として記録する。
+   （答えずにスクロールで送ったぶんは、いままでどおり記録に残らない） */
+function reveal(){
+  const q = curQ();
+  if(!q) return;
+  if(answered[CUR]){ openAnswer(); return; }   /* もう答えている問題はその結果を出す */
+  $('ansQ').innerHTML = fmt(q.q) + (q.g ? '<span class="g">ただし '+fmt(q.g)+'</span>' : '');
+  openSheet($('ansSheet'));
+  if(q.self){ showSelf(q, false); return; }
+  score(q, false);
+  showResult(q, false, '', true);
+}
+
+/* =======================================================================
+   計算スペース（書くモード）
+   ======================================================================= */
+const pad  = $('pad');
+const ctx  = pad.getContext('2d');
+const buf  = document.createElement('canvas');
+const bctx = buf.getContext('2d');
+
+let strokes = [], redoStack = [];
+let drawing = false, cur = null;
+let tool = 'pen';
+let penW = 2.2, eraW = 24;
+let penSeen = false;
+let dpr = 1;
+const padStore = {}, padOrder = [];
+const PAD_KEEP = 24;
+
+function setupPad(){
+  const r = pad.getBoundingClientRect();
+  if(r.width===0 || r.height===0) return;
+  dpr = Math.min(window.devicePixelRatio||1, 2.5);
+  pad.width  = buf.width  = Math.round(r.width*dpr);
+  pad.height = buf.height = Math.round(r.height*dpr);
+  bake();
+}
+function inkStroke(c, s){
+  if(!s.pts.length) return;
+  c.save();
+  c.setTransform(dpr,0,0,dpr,0,0);
+  c.lineCap = 'round'; c.lineJoin = 'round'; c.lineWidth = s.w;
+  if(s.tool==='era'){
+    c.globalCompositeOperation = 'destination-out';
+    c.strokeStyle = c.fillStyle = 'rgba(0,0,0,1)';
+  }else{
+    c.globalCompositeOperation = 'source-over';
+    c.strokeStyle = c.fillStyle = '#ffffff';
+  }
+  if(s.pts.length===1){
+    c.beginPath();
+    c.arc(s.pts[0].x, s.pts[0].y, s.w/2, 0, Math.PI*2);
+    c.fill();
+  }else{
+    c.beginPath();
+    c.moveTo(s.pts[0].x, s.pts[0].y);
+    for(let i=1;i<s.pts.length-1;i++){
+      const mx=(s.pts[i].x+s.pts[i+1].x)/2, my=(s.pts[i].y+s.pts[i+1].y)/2;
+      c.quadraticCurveTo(s.pts[i].x, s.pts[i].y, mx, my);
+    }
+    const L = s.pts[s.pts.length-1];
+    c.lineTo(L.x, L.y);
+    c.stroke();
+  }
+  c.restore();
+}
+function bake(){
+  bctx.setTransform(1,0,0,1,0,0);
+  bctx.clearRect(0,0,buf.width,buf.height);
+  for(let i=0;i<strokes.length;i++) inkStroke(bctx, strokes[i]);
+  paint();
+}
+function paint(){
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.clearRect(0,0,pad.width,pad.height);
+  ctx.drawImage(buf,0,0);
+  if(cur) inkStroke(ctx, cur);
+  const n = strokes.length + (cur?1:0);
+  $('padHint').style.opacity = (n || !writing) ? 0 : 1;
+  $('tUndo').disabled = strokes.length===0;
+  $('tRedo').disabled = redoStack.length===0;
+}
+function ptOf(e){
+  const r = pad.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+pad.addEventListener('pointerdown', e=>{
+  if(e.pointerType==='pen') penSeen = true;
+  if(penSeen && e.pointerType==='touch') return;
+  if(e.pointerType==='mouse' && e.button!==0) return;
+  e.preventDefault();
+  pad.setPointerCapture(e.pointerId);
+  drawing = true;
+  redoStack.length = 0;
+  cur = { tool:tool, w: tool==='era'?eraW:penW, pts:[ptOf(e)] };
+  paint();
+});
+pad.addEventListener('pointermove', e=>{
+  if(!drawing || !cur) return;
+  e.preventDefault();
+  const evs = e.getCoalescedEvents ? e.getCoalescedEvents() : [e];
+  for(let i=0;i<evs.length;i++){
+    const p = ptOf(evs[i]);
+    const last = cur.pts[cur.pts.length-1];
+    if(Math.abs(p.x-last.x)+Math.abs(p.y-last.y) < 0.7) continue;
+    cur.pts.push(p);
+  }
+  paint();
+});
+function endDraw(){
+  if(!drawing) return;
+  drawing = false;
+  if(cur){ strokes.push(cur); inkStroke(bctx, cur); cur = null; }
+  paint();
+}
+pad.addEventListener('pointerup', endDraw);
+pad.addEventListener('pointercancel', endDraw);
+/* 2本指タップで1つ戻す */
+let twoAt = 0;
+pad.addEventListener('touchstart', e=>{
+  if(e.touches.length===2){
+    twoAt = Date.now();
+    if(drawing){ drawing=false; cur=null; paint(); }
+  }
+}, {passive:true});
+pad.addEventListener('touchend', e=>{
+  if(twoAt && e.touches.length===0){
+    const quick = Date.now()-twoAt < 320;
+    twoAt = 0;
+    if(quick) undo();
+  }
+}, {passive:true});
+
+function undo(){ if(strokes.length){ redoStack.push(strokes.pop()); bake(); buzz(6); } }
+function redo(){ if(redoStack.length){ const s=redoStack.pop(); strokes.push(s); inkStroke(bctx,s); paint(); buzz(6); } }
+function clearPad(){ strokes.length = 0; redoStack.length = 0; cur = null; bake(); }
+function usePad(key){
+  if(!padStore[key]){
+    padStore[key] = {s:[], r:[]};
+    padOrder.push(key);
+    while(padOrder.length > PAD_KEEP){
+      const old = padOrder.shift();
+      if(old !== key) delete padStore[old];
+    }
+  }
+  strokes = padStore[key].s;
+  redoStack = padStore[key].r;
+  cur = null;
+  bake();
+}
+function resetPadStore(){
+  for(const k in padStore) delete padStore[k];
+  padOrder.length = 0;
+  strokes = []; redoStack = []; cur = null;
+}
+function setTool(t){
+  tool = t;
+  $('tPen').classList.toggle('on', t==='pen');
+  $('tEra').classList.toggle('on', t==='era');
+}
+$('tPen').addEventListener('click', ()=>setTool('pen'));
+$('tEra').addEventListener('click', ()=>setTool('era'));
+$('tUndo').addEventListener('click', undo);
+$('tRedo').addEventListener('click', redo);
+$('tClr').addEventListener('click', ()=>{ clearPad(); buzz(10); });
+$('tDone').addEventListener('click', ()=>setWrite(false));
+
+/* 画面はそのまま。キャンバスが指を受け取るかどうかだけを切り替える。 */
+let writing = false;
+function setWrite(on){
+  const q = curQ();
+  if(on && !q) return;
+  writing = on;
+  document.body.classList.toggle('writing', on);
+  if(on) document.body.classList.add('knows-write');
+  $('tools').classList.toggle('hide', !on);
+  syncNav(on ? 'write' : 'home');
+  if(on) usePad(q.id);
+  requestAnimationFrame(setupPad);
+  paint();
+}
+
+let rzT = null, lastW = innerWidth, lastH = innerHeight;
+window.addEventListener('resize', ()=>{
+  if(innerWidth===lastW && innerHeight===lastH) return;
+  lastW = innerWidth; lastH = innerHeight;
+  clearTimeout(rzT);
+  rzT = setTimeout(setupPad, 140);
+});
+function buzz(ms){ try{ if(navigator.vibrate) navigator.vibrate(ms); }catch(e){} }
+
+/* =======================================================================
+   範囲シート
+   ======================================================================= */
+function renderScope(){
+  const body = $('scopeBody');
+  let h = '';
+  const row = (id, name, desc, list)=>{
+    let done = 0; list.forEach(x=>{ if(ST[x.id] && ST[x.id].c>0) done++; });
+    const rate = list.length ? done/list.length : 0;
+    return '<button class="sitem'+(id===SCOPE?' on':'')+'" data-id="'+id+'">'+
+             '<span class="nm">'+esc(name)+'<i>'+esc(desc)+'</i>'+
+               '<span class="bar"><i style="width:'+Math.round(rate*100)+'%"></i></span></span>'+
+             '<span class="num">'+done+' / '+list.length+'</span>'+
+           '</button>';
+  };
+  h += '<div class="gname">ぜんぶ</div>';
+  h += row('__all__','すべての範囲','指数・対数のすべての問題', ALL);
+  const todo = ALL.filter(q=>isPending(q.id));
+  const fav  = ALL.filter(q=>isFav(q.id));
+  h += row('__todo__','要復習','間違えたまま正解していない問題', todo);
+  h += row('__fav__','お気に入り','ハートを押した問題', fav);
+  GROUPS.forEach(g=>{
+    h += '<div class="gname">'+esc(g.name)+'</div>';
+    g.ids.forEach(id=>{
+      const t = BYTOPIC[id];
+      if(!t) return;
+      h += row(id, shortName(t), t.desc, ALL.filter(q=>q.topic===id));
+    });
+  });
+  h += '<div style="height:14px"></div>';
+  body.innerHTML = h;
+}
+$('scopeBody').addEventListener('click', e=>{
+  const b = e.target.closest('.sitem');
+  if(!b) return;
+  closeSheets();
+  setTimeout(()=>setScope(b.dataset.id), 180);
+});
+
+/* =======================================================================
+   記録シート
+   ======================================================================= */
+function renderStats(){
+  let tried = 0, right = 0, wrongSum = 0;
+  for(const k in ST){
+    const r = ST[k];
+    if((r.c||0)+(r.w||0) > 0) tried++;
+    if(r.c>0) right++;
+    wrongSum += (r.w||0);
+  }
+  const rate = tried ? Math.round(right/tried*100) : 0;
+  let h = '<div class="stwrap">';
+  h += '<div class="hero">'+
+         '<div class="hcard"><b>'+right+'<span style="font-size:12px;color:var(--t3)"> / '+ALL.length+'</span></b><i>正解した問題</i></div>'+
+         '<div class="hcard"><b>'+rate+'<span style="font-size:12px;color:var(--t3)">%</span></b><i>解いたうちの正解率</i></div>'+
+       '</div>';
+  h += '<div class="hero">'+
+         '<div class="hcard"><b>'+totalPending()+'</b><i>要復習</i></div>'+
+         '<div class="hcard"><b>'+totalFav()+'</b><i>お気に入り</i></div>'+
+       '</div>';
+
+  h += '<div class="stsec">範囲ごと</div>';
+  const rows = [];
+  TOPICS.forEach(t=>{
+    const list = ALL.filter(q=>q.topic===t.id);
+    let done = 0, w = 0;
+    list.forEach(q=>{ if(ST[q.id]){ if(ST[q.id].c>0) done++; w += (ST[q.id].w||0); } });
+    rows.push({t:t, n:list.length, done:done, w:w});
+  });
+  rows.forEach(r=>{
+    const p = r.n ? Math.round(r.done/r.n*100) : 0;
+    h += '<div class="strow"><span class="nm">'+esc(shortName(r.t))+'</span>'+
+         '<span class="bar" style="width:74px;margin:0;flex:none"><i style="width:'+p+'%"></i></span>'+
+         '<span class="v">'+r.done+'/'+r.n+(r.w?'　×'+r.w:'')+'</span></div>';
+  });
+
+  const bad = Object.keys(ST).filter(k=>BYID[k] && (ST[k].w||0)>0)
+                    .sort((a,b)=>ST[b].w-ST[a].w).slice(0,10);
+  if(bad.length){
+    h += '<div class="stsec">よく間違える問題</div>';
+    bad.forEach(k=>{
+      const q = BYID[k];
+      h += '<div class="strow"><span class="nm mq">'+fmt(q.q)+'</span><span class="v">×'+ST[k].w+'</span></div>';
+    });
+  }
+
+  h += '<button class="danger" id="wipe">このアプリの記録を消す</button>'+
+       '<div class="note">消えるのはフィードの記録だけです。'+
+       'もとの「指数・対数」アプリの記録は別に保存されているので残ります。</div>';
+  h += '</div>';
+  $('statBody').innerHTML = h;
+  $('wipe').addEventListener('click', ()=>{
+    if(!confirm('フィードの記録をすべて消します。よろしいですか？')) return;
+    ST = {}; FAV = {};
+    try{
+      localStorage.removeItem(K.st);
+      localStorage.removeItem(K.fav);
+    }catch(e){}
+    renderStats();
+    buildTabs();
+    rebuild();
+  });
+}
+
+/* =======================================================================
+   カードの上での操作
+   ======================================================================= */
+feed.addEventListener('click', e=>{
+  const b = e.target.closest('[data-a]');
+  if(b){
+    const card = b.closest('.card');
+    if(card) CUR = +card.dataset.i;
+    act(b.dataset.a);
+    return;
+  }
+  /* 問題文をタップしたら全部見せる */
+  const cap = e.target.closest('.cap');
+  if(cap) cap.classList.toggle('open');
+});
+
+function act(a){
+  const q = curQ();
+  if(a==='answer'){ openAnswer(); }
+  else if(a==='reveal'){ reveal(); }
+  else if(a==='write'){ setWrite(!writing); }
+  else if(a==='scope'){ renderScope(); openSheet($('scopeSheet')); }
+  else if(a==='stats'){ renderStats(); openSheet($('statSheet')); }
+  else if(a==='fav'){
+    if(!q) return;
+    if(FAV[q.id]) delete FAV[q.id]; else FAV[q.id] = 1;
+    writeJSON(K.fav, FAV);
+    refreshCard(CUR);
+    buildTabs();
+    buzz(6);
+  }
+  else if(a==='todo'){
+    if(!q) return;
+    const r = rec(q.id);
+    r.p = r.p===1 ? 0 : 1;
+    saveST();
+    refreshCard(CUR);
+    buildTabs();
+    buzz(6);
+  }
+  else if(a==='shuffle'){
+    SHUF = !SHUF;
+    try{ localStorage.setItem(K.shuf, SHUF?'1':'0'); }catch(e){}
+    rebuild();
+    buzz(8);
+  }
+  else if(a==='home'){
+    setWrite(false);
+    closeSheets();
+  }
+}
+
+$('nav').addEventListener('click', e=>{
+  const b = e.target.closest('.nb');
+  if(!b) return;
+  act(b.dataset.a);
+});
+function syncNav(which){
+  Array.prototype.forEach.call($('nav').children, b=>{
+    b.classList.toggle('on', b.dataset.a===which);
+  });
+}
+
+/* =======================================================================
+   起動
+   ======================================================================= */
+buildTabs();
+rebuild();
+requestAnimationFrame(setupPad);
+
+/* 案内は初回だけ */
+let seen = false;
+try{ seen = localStorage.getItem(K.seen)==='1'; }catch(e){}
+if(!seen){
+  $('intro').classList.remove('hide');
+  $('introGo').addEventListener('click', ()=>{
+    $('intro').classList.add('hide');
+    try{ localStorage.setItem(K.seen,'1'); }catch(e){}
+  });
+}
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    /* このページから登録するので、担当は /jhvjh/ の中だけになる。
+       本編アプリ（/tiri/）の Service Worker とは持ち場が分かれる。 */
+    navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  });
+}
+</script>
 </body>
 </html>
