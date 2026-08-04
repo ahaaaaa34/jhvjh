@@ -719,8 +719,8 @@ function writeJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catc
    読み書きする鍵の名前を向こうに合わせるだけで、同じ記録を見ることになる。
    問題データは本編からそのまま写したもので、問題IDの作り方も同じなので、
    同じ問題には同じIDが付く。記録の形（正解数・間違い数・要復習）も同じ。 */
-let SHARE = false;
-try{ SHARE = localStorage.getItem(K.share)==='1'; }catch(e){}
+let SHARE = true;
+try{ const v = localStorage.getItem(K.share); if(v!==null) SHARE = v==='1'; }catch(e){}
 function stKey(){ return SHARE ? 'explog_stats_v1' : K.st; }
 
 let ST  = readJSON(stKey(), {});
@@ -1586,6 +1586,10 @@ function renderStats(){
     });
   }
 
+  const other = readJSON(SHARE ? K.st : 'explog_stats_v1', {});
+  let otherN = 0;
+  for(const k in other){ if(BYID[k] && ((other[k].c||0)+(other[k].w||0))>0) otherN++; }
+
   h += '<div class="stsec">記録のつなぎ方</div>'+
        '<button class="swrow'+(SHARE?' on':'')+'" id="shareBtn">'+
          '<span class="nm">本編アプリと共有する<i>'+
@@ -1593,7 +1597,10 @@ function renderStats(){
                   : 'いまはフィード専用の記録です。入にすると「指数・対数」アプリと共通になります。')+
          '</i></span><span class="sw"><i></i></span></button>'+
        '<div class="note">切りかえても、どちらの記録もその場に残ります。'+
-       '行ったり来たりしても消えません。</div>';
+       '行ったり来たりしても消えません。'+
+       (otherN ? '<br>いま見えていない方に、'+otherN+'問ぶんの記録があります。'+
+                 (SHARE ? '切にすると出てきます。' : '入にすると出てきます。') : '')+
+       '</div>';
 
   h += '<button class="danger" id="wipe">'+(SHARE?'共通の記録を消す':'フィードの記録を消す')+'</button>'+
        '<div class="note">'+
