@@ -60,7 +60,9 @@ sup{vertical-align:.5em} sub{vertical-align:-.28em}
    フィード本体
    ======================================================================= */
 #feed{
-  position:fixed; inset:0;
+  /* fixed にすると中の重なり順が外から届かなくなり、書いている最中に
+     右のアイコン列を押せなくなる。absolute なら同じ見た目のまま届く。 */
+  position:absolute; inset:0;
   overflow-y:scroll; overflow-x:hidden;
   scroll-snap-type:y mandatory;
   overscroll-behavior-y:contain;
@@ -86,7 +88,10 @@ sup{vertical-align:.5em} sub{vertical-align:-.28em}
 }
 
 /* ---------- 左下（TikTok の アカウント名＋動画タイトル の場所） ---------- */
-.meta{position:relative; z-index:2; padding:0 78px 0 14px; max-width:100%}
+.meta{position:relative; z-index:4; padding:0 78px 0 14px; max-width:100%; pointer-events:none}
+.meta .lnk{pointer-events:auto}
+/* 問題文をタップして開くのは、書いていないときだけ（書いている最中は上に書けるように） */
+body:not(.writing) .cap{pointer-events:auto}
 /* 何問目か */
 .who{font-size:17px; font-weight:700; letter-spacing:.02em}
 /* 問題文 */
@@ -125,10 +130,11 @@ sup{vertical-align:.5em} sub{vertical-align:-.28em}
 
 /* ---------- 右のアイコン列 ---------- */
 .rail{
-  position:absolute; right:6px; z-index:2;
+  position:absolute; right:6px; z-index:4; pointer-events:none;
   bottom:calc(var(--navH) + var(--safeB) + 8px);
   display:flex; flex-direction:column; align-items:center; gap:13px;
 }
+.rail > *{pointer-events:auto}
 .rail .ri{display:flex; flex-direction:column; align-items:center; gap:4px}
 .rail .ri svg{width:31px; height:31px; fill:#fff; filter:drop-shadow(0 1px 3px rgba(0,0,0,.5))}
 .rail .ri .n{font-size:11.5px; font-weight:600; color:#fff; text-shadow:0 1px 3px rgba(0,0,0,.5)}
@@ -915,7 +921,7 @@ function setScope(id){
 /* =======================================================================
    シート
    ======================================================================= */
-function openSheet(el){ setWrite(false); $('back').classList.add('on'); el.classList.add('on'); }
+function openSheet(el){ $('back').classList.add('on'); el.classList.add('on'); }
 function closeSheets(){
   $('back').classList.remove('on');
   ['ansSheet','scopeSheet','statSheet'].forEach(id=>{
