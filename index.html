@@ -701,7 +701,8 @@ const K = {
   share: 'feed_share_v1',    // 本編アプリと記録を共有するか
   fav  : 'feed_fav_v1',      // {qid:1}
   scope: 'feed_scope_v1',    // いま選んでいる範囲
-  shuf : 'feed_shuffle_v1',  // 出題順
+  shuf : 'feed_shuffle_v1',  // 旧・出題順（true/false のころのもの）
+  order: 'feed_order_v1',    // 出題順 seq / rand / freq
   seen : 'feed_seen_v1'      // 案内を出したか
 };
 function readJSON(k, dflt){
@@ -759,18 +760,38 @@ function totalDone(){ let n=0; for(const k in ST) if(ST[k].c>0) n++; return n; }
 const $ = id => document.getElementById(id);
 let SCOPE = '__all__';
 try{ const v = localStorage.getItem(K.scope); if(v==='__all__'||v==='__fav__'||v==='__todo__'||BYTOPIC[v]) SCOPE = v; }catch(e){}
-let SHUF = false;
-try{ SHUF = localStorage.getItem(K.shuf)==='1'; }catch(e){}
+/* seq  … 教科書の順番どおり
+   rand … ランダム
+   freq … 間違えた回数が多い順（本編アプリの復習モードと同じ並べ方） */
+const ORDERS = ['seq','rand','freq'];
+const ORDER_NAME = {seq:'じゅんばん', rand:'ランダム', freq:'まちがい順'};
+let ORDER = 'seq';
+try{
+  const v = localStorage.getItem(K.order);
+  if(ORDERS.indexOf(v)>=0) ORDER = v;
+  else if(localStorage.getItem(K.shuf)==='1') ORDER = 'rand';   /* 前の設定を引き継ぐ */
+}catch(e){}
+function wcount(id){ return ST[id] ? (ST[id].w||0) : 0; }
 
 let queue = [];      // 出題ぶんの問題（下に伸びていく）
 let CUR   = 0;       // いま見ているカード
 const answered = {}; // このセッションで答えたカード（カード番号ごと）
 
 function poolOf(){
-  if(SCOPE==='__all__') return ALL.slice();
-  if(SCOPE==='__fav__') return ALL.filter(q=>isFav(q.id));
-  if(SCOPE==='__todo__') return ALL.filter(q=>isPending(q.id));
-  return ALL.filter(q=>q.topic===SCOPE);
+  let list;
+  if(SCOPE==='__all__')       list = ALL.slice();
+  else if(SCOPE==='__fav__')  list = ALL.filter(q=>isFav(q.id));
+  else if(SCOPE==='__todo__') list = ALL.filter(q=>isPending(q.id));
+  else                        list = ALL.filter(q=>q.topic===SCOPE);
+  /* まちがい順は、間違えたことのある問題だけを多い順に。
+     正解しても回数は減らないので、苦手なものが先に来続ける。 */
+  if(ORDER==='freq'){
+    list = list.filter(q=>wcount(q.id)>0);
+    list.sort((a,b)=>wcount(b.id)-wcount(a.id));
+  }else if(SCOPE==='__todo__'){
+    list.sort((a,b)=>wcount(b.id)-wcount(a.id));   /* 要復習も間違いの多い順 */
+  }
+  return list;
 }
 function shuffled(a){
   const b = a.slice();
@@ -780,9 +801,9 @@ function shuffled(a){
 let pool = [];
 function extend(){
   if(!pool.length) return;
-  const pass = SHUF ? shuffled(pool) : pool.slice();
+  const pass = ORDER==='rand' ? shuffled(pool) : pool.slice();
   /* 同じ問題が続けて出ないように、つなぎ目だけずらす */
-  if(SHUF && queue.length && pass.length>1 && pass[0].id===queue[queue.length-1].id){
+  if(ORDER==='rand' && queue.length && pass.length>1 && pass[0].id===queue[queue.length-1].id){
     const t = pass.shift(); pass.splice(1,0,t);
   }
   queue = queue.concat(pass);
@@ -824,9 +845,9 @@ function cardHTML(q, n){
     '<button class="ri" data-a="answer">'+svgComment()+'<span class="n">'+tries(q.id)+'</span></button>'+
     '<button class="ri cy'+(isPending(q.id)?' on':'')+'" data-a="todo">'+svgMark()+'<span class="n">'+totalPending()+'</span></button>'+
     '<button class="ri" data-a="stats">'+svgChart()+'<span class="n">'+totalDone()+'</span></button>'+
-    '<button class="ri ord'+(SHUF?'':' stop')+'" data-a="shuffle">'+
+    '<button class="ri ord'+(ORDER==='rand'?'':' stop')+'" data-a="shuffle">'+
       '<span class="disc"><svg viewBox="0 0 24 24"><path d="M9 18V6l11-2v12"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="17.5" cy="16" r="2.6"/></svg></span>'+
-      '<span class="n">'+(SHUF?'ランダム':'じゅんばん')+'</span></button>'+
+      '<span class="n">'+ORDER_NAME[ORDER]+'</span></button>'+
   '</div>'+
   '<div class="meta">'+
     '<div class="who">'+n+'問目</div>'+
@@ -880,9 +901,11 @@ function rebuild(){
     el.className = 'card';
     el.dataset.i = 0;
     el.innerHTML = '<div class="meta"><div class="who">0問</div>'+
-      '<div class="cap" style="font-family:inherit;font-size:15px">この範囲にはまだ問題がありません。'+
-      (SCOPE==='__fav__' ? 'ハートを押した問題がここに集まります。'
-       : SCOPE==='__todo__' ? '間違えた問題がここに集まります。' : '')+
+      '<div class="cap" style="font-family:inherit;font-size:15px">'+
+      (ORDER==='freq' ? 'まちがい順で出せる問題がまだありません。一度でも間違えた問題が、間違えた回数の多い順に並びます。'
+       : SCOPE==='__fav__' ? 'ハートを押した問題がまだありません。ハートを押すとここに集まります。'
+       : SCOPE==='__todo__' ? '要復習の問題がありません。間違えた問題がここに集まります。'
+       : 'この範囲にはまだ問題がありません。')+
       '</div>'+
       '<div class="lnks"><button class="lnk" data-a="scope">範囲をえらぶ</button></div></div>';
     feed.appendChild(el);
@@ -1667,8 +1690,8 @@ function act(a){
     buzz(6);
   }
   else if(a==='shuffle'){
-    SHUF = !SHUF;
-    try{ localStorage.setItem(K.shuf, SHUF?'1':'0'); }catch(e){}
+    ORDER = ORDERS[(ORDERS.indexOf(ORDER)+1) % ORDERS.length];
+    try{ localStorage.setItem(K.order, ORDER); }catch(e){}
     rebuild();
     buzz(8);
   }
