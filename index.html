@@ -369,6 +369,11 @@ body:not(.writing) .cap{pointer-events:auto}
 .swrow .sw i{display:block; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .16s}
 .swrow.on .sw{background:var(--ok)}
 .swrow.on .sw i{transform:translateX(18px)}
+.swrow.go{color:inherit; text-decoration:none}
+.swrow.go:active{background:rgba(255,255,255,.06)}
+.swrow .arw{flex:none; width:26px; height:26px; display:flex; align-items:center; justify-content:center}
+.swrow .arw svg{width:19px; height:19px; fill:none; stroke:var(--t3); stroke-width:1.8;
+                stroke-linecap:round; stroke-linejoin:round}
 .danger{margin-top:22px; width:100%; min-height:44px; border-radius:11px; border:1px solid var(--ng);
         color:var(--ng); font-size:13px; display:flex; align-items:center; justify-content:center}
 .note{font-size:11px; color:var(--t3); line-height:1.8; margin-top:10px}
@@ -1619,6 +1624,11 @@ function renderStats(){
            (SHARE ? '「指数・対数」アプリと同じ記録を見ています。どちらで解いても両方に反映されます。'
                   : 'いまはフィード専用の記録です。入にすると「指数・対数」アプリと共通になります。')+
          '</i></span><span class="sw"><i></i></span></button>'+
+       '<a class="swrow go" href="../tiri/">'+
+         '<span class="nm">本編アプリを開く<i>教科書の順に1問ずつ解く、もとの「指数・対数」。'+
+         '同じ記録を見ています。</i></span>'+
+         '<span class="arw"><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></span>'+
+       '</a>'+
        '<div class="note">切りかえても、どちらの記録もその場に残ります。'+
        '行ったり来たりしても消えません。'+
        (otherN ? '<br>いま見えていない方に、'+otherN+'問ぶんの記録があります。'+
