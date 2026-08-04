@@ -8,7 +8,7 @@
      ・圏外でも開けること
      ・つながっているときは必ず最新が出ること */
 
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE   = 'explog-feed-' + VERSION;
 
 const SHELL = [

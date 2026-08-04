@@ -356,6 +356,19 @@ body:not(.writing) .cap{pointer-events:auto}
 .strow{display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.07); font-size:13.5px}
 .strow .nm{flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .strow .v{font-size:11.5px; color:var(--t3); flex:none}
+.swrow{
+  width:100%; text-align:left; display:flex; align-items:center; gap:12px;
+  padding:12px 0; border-bottom:1px solid rgba(255,255,255,.07);
+}
+.swrow .nm{flex:1; min-width:0; font-size:14px}
+.swrow .nm i{display:block; font-style:normal; font-size:11px; color:var(--t3); margin-top:3px; line-height:1.7}
+.swrow .sw{
+  flex:none; width:44px; height:26px; border-radius:99px; background:#3a3a3e;
+  display:flex; align-items:center; padding:3px; transition:background .16s;
+}
+.swrow .sw i{display:block; width:20px; height:20px; border-radius:50%; background:#fff; transition:transform .16s}
+.swrow.on .sw{background:var(--ok)}
+.swrow.on .sw i{transform:translateX(18px)}
 .danger{margin-top:22px; width:100%; min-height:44px; border-radius:11px; border:1px solid var(--ng);
         color:var(--ng); font-size:13px; display:flex; align-items:center; justify-content:center}
 .note{font-size:11px; color:var(--t3); line-height:1.8; margin-top:10px}
@@ -685,6 +698,7 @@ function judge(input, list){
    ======================================================================= */
 const K = {
   st   : 'feed_stats_v1',    // {qid:{c:正解数, w:間違い数, p:要復習}}
+  share: 'feed_share_v1',    // 本編アプリと記録を共有するか
   fav  : 'feed_fav_v1',      // {qid:1}
   scope: 'feed_scope_v1',    // いま選んでいる範囲
   shuf : 'feed_shuffle_v1',  // 出題順
@@ -700,16 +714,37 @@ function readJSON(k, dflt){
 }
 function writeJSON(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 
-let ST  = readJSON(K.st, {});
+/* 本編アプリ（/tiri/）と記録を共有するかどうか。
+   GitHub Pages はリポジトリが違っても ahaaaaa34.github.io という同じ置き場所なので、
+   読み書きする鍵の名前を向こうに合わせるだけで、同じ記録を見ることになる。
+   問題データは本編からそのまま写したもので、問題IDの作り方も同じなので、
+   同じ問題には同じIDが付く。記録の形（正解数・間違い数・要復習）も同じ。 */
+let SHARE = false;
+try{ SHARE = localStorage.getItem(K.share)==='1'; }catch(e){}
+function stKey(){ return SHARE ? 'explog_stats_v1' : K.st; }
+
+let ST  = readJSON(stKey(), {});
 let FAV = readJSON(K.fav, {});
 /* 差し替えられた問題の記録が残り続けないよう、いまない問題は捨てる */
 (function(){
   let drop = false;
-  for(const k in ST){ if(!BYID[k] || !ST[k] || typeof ST[k]!=='object'){ delete ST[k]; drop = true; } }
+  /* 共有中は本編アプリの持ち物なので、知らない記録があっても捨てない */
+  if(!SHARE){
+    for(const k in ST){ if(!BYID[k] || !ST[k] || typeof ST[k]!=='object'){ delete ST[k]; drop = true; } }
+  }
   for(const k in FAV){ if(!BYID[k]){ delete FAV[k]; drop = true; } }
   if(drop){ writeJSON(K.st, ST); writeJSON(K.fav, FAV); }
 })();
-function saveST(){ writeJSON(K.st, ST); }
+function saveST(){ writeJSON(stKey(), ST); }
+/* 共有の切り替え。どちらの記録もその場に残るので、何度でも行き来できる。 */
+function setShare(on){
+  SHARE = on;
+  try{ localStorage.setItem(K.share, on?'1':'0'); }catch(e){}
+  ST = readJSON(stKey(), {});
+  renderStats();
+  buildTabs();
+  rebuild();
+}
 function rec(id){ if(!ST[id]) ST[id] = {c:0,w:0,p:0}; return ST[id]; }
 function tries(id){ const r=ST[id]; return r ? (r.c||0)+(r.w||0) : 0; }
 function isFav(id){ return !!FAV[id]; }
@@ -1551,16 +1586,31 @@ function renderStats(){
     });
   }
 
-  h += '<button class="danger" id="wipe">このアプリの記録を消す</button>'+
-       '<div class="note">消えるのはフィードの記録だけです。'+
-       'もとの「指数・対数」アプリの記録は別に保存されているので残ります。</div>';
+  h += '<div class="stsec">記録のつなぎ方</div>'+
+       '<button class="swrow'+(SHARE?' on':'')+'" id="shareBtn">'+
+         '<span class="nm">本編アプリと共有する<i>'+
+           (SHARE ? '「指数・対数」アプリと同じ記録を見ています。どちらで解いても両方に反映されます。'
+                  : 'いまはフィード専用の記録です。入にすると「指数・対数」アプリと共通になります。')+
+         '</i></span><span class="sw"><i></i></span></button>'+
+       '<div class="note">切りかえても、どちらの記録もその場に残ります。'+
+       '行ったり来たりしても消えません。</div>';
+
+  h += '<button class="danger" id="wipe">'+(SHARE?'共通の記録を消す':'フィードの記録を消す')+'</button>'+
+       '<div class="note">'+
+       (SHARE ? '共有中なので、<b style="color:var(--ng)">本編アプリの記録も一緒に消えます</b>。'+
+                'フィードだけ消したいときは、先に共有を切ってください。'
+              : '消えるのはフィードの記録だけです。'+
+                'もとの「指数・対数」アプリの記録は別に保存されているので残ります。')+
+       '</div>';
   h += '</div>';
   $('statBody').innerHTML = h;
+  $('shareBtn').addEventListener('click', ()=>{ setShare(!SHARE); buzz(8); });
   $('wipe').addEventListener('click', ()=>{
-    if(!confirm('フィードの記録をすべて消します。よろしいですか？')) return;
+    if(!confirm(SHARE ? '本編アプリと共通の記録をすべて消します。向こうの記録も消えます。よろしいですか？'
+                      : 'フィードの記録をすべて消します。よろしいですか？')) return;
     ST = {}; FAV = {};
     try{
-      localStorage.removeItem(K.st);
+      localStorage.removeItem(stKey());
       localStorage.removeItem(K.fav);
     }catch(e){}
     renderStats();
