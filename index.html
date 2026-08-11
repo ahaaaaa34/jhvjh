@@ -558,7 +558,9 @@ function qhash(s){
 const ALL = [];
 TOPICS.forEach(t=>{
   t.qs.forEach(q=>{
-    q.id = t.id+'-'+qhash(q.q);
+    /* IDは data.js の各問に書いてある。問題文を直しても記録が迷子にならないため。
+       書いていないもの（新しく足した問題）だけ、これまでどおり問題文から作る。 */
+    q.id = q.id || (t.id+'-'+qhash(q.q));
     q.topic = t.id;
     q.tname = t.name;
     ALL.push(q);
