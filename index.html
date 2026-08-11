@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#000000">
 <meta name="description" content="指数・対数の問題を、縦にスクロールしながら1問ずつ解いていくアプリ。">
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./katex.min.css">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="指数対数フィード">
@@ -53,6 +54,16 @@ sup{vertical-align:.5em} sub{vertical-align:-.28em}
     margin:0 .14em; line-height:1.12; position:relative; top:-.08em}
 .fr .fn{font-size:.82em; padding:0 .2em}
 .fr .fd{font-size:.82em; padding:0 .2em; border-top:1px solid currentColor; margin-top:.08em}
+
+/* ---------- KaTeX ----------
+ 数式は KaTeX で組む。地の文はこれまでどおりの書体のまま。 */
+.katex{font-size:1.05em}
+.mq .katex{font-size:1em}
+/* 埋めるべき □ */
+.tbx{color:var(--ng)}
+/* 入力欄のカーソル */
+.tcaret{animation:tcar 1.05s steps(1) infinite; font-weight:300}
+@keyframes tcar{50%{opacity:0}}
 .bx{display:inline-block; min-width:.72em; padding:0 .06em; border:1px dashed var(--ng);
     border-radius:3px; color:var(--ng); line-height:1.15; text-align:center}
 
@@ -543,6 +554,8 @@ body.knows-write .void{opacity:0}
   <button class="pbtn" id="introGo">はじめる</button>
 </div>
 
+<script src="./katex.min.js"></script>
+<script src="./tex.js"></script>
 <script src="./data.js"></script>
 <script>
 "use strict";
@@ -582,6 +595,12 @@ function esc(s){
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 function fmt(s){
+  /* まず KaTeX で組む。読み込めていないときだけ、下の昔の組み方に落ちる。 */
+  const k = texHTML(s, esc);
+  if(k !== null) return k;
+  return fmtOld(s);
+}
+function fmtOld(s){
   return esc(String(s))
     .replace(/\^\(([^()]*)\)/g,'^{$1}')
     .replace(/√\[(.+?)\]\{(.+?)\}/g,'<span class="rt"><span class="ri">$1</span>&radic;<span class="rb">$2</span></span>')
@@ -1115,6 +1134,11 @@ function doFn(f){
 }
 function boxify(html){ return html.split(BOX).join('<span class="bx">'+BOX+'</span>'); }
 function preview(s){
+  const k = texHTML(unfrac(String(s)), esc);
+  if(k !== null) return k;
+  return previewOld(s);
+}
+function previewOld(s){
   let t = unfrac(String(s));
   t = t.replace(/\^\(([^()]*)\)/g, '^{$1}');
   t = t.replace(/√\(([^()]*)\)/g, '√{$1}');
