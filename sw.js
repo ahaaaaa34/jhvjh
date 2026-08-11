@@ -8,7 +8,7 @@
      ・圏外でも開けること
      ・つながっているときは必ず最新が出ること */
 
-const VERSION = 'v11';
+const VERSION = 'v12';
 const CACHE   = 'explog-feed-' + VERSION;
 
 const SHELL = [
@@ -19,6 +19,7 @@ const SHELL = [
   './katex.min.js',
   './katex.min.css',
   './tex.js',
+  './backup.js',
   './fonts/KaTeX_AMS-Regular.woff2',
   './fonts/KaTeX_Caligraphic-Bold.woff2',
   './fonts/KaTeX_Caligraphic-Regular.woff2',

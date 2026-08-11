@@ -385,6 +385,22 @@ body:not(.writing) .cap{pointer-events:auto}
 .swrow .arw{flex:none; width:26px; height:26px; display:flex; align-items:center; justify-content:center}
 .swrow .arw svg{width:19px; height:19px; fill:none; stroke:var(--t3); stroke-width:1.8;
                 stroke-linecap:round; stroke-linejoin:round}
+
+/* ---------- 記録の持ち出し ---------- */
+.bkrow{display:flex; gap:8px; margin-top:8px}
+.bkbtn{flex:1; min-height:42px; border-radius:11px; border:1px solid rgba(255,255,255,.13);
+       background:var(--sheet2); color:inherit; font-size:13.5px}
+.bkbtn.go{background:var(--ok); border-color:var(--ok); color:#000; font-weight:600}
+.bkbtn:active{opacity:.75}
+.bknote{font-size:11px; color:var(--t3); line-height:1.85; margin-top:9px}
+.bkbox{margin-top:12px; padding:12px; border:1px solid rgba(255,255,255,.13); border-radius:12px; background:var(--sheet2)}
+.bkh{margin:0 0 8px; font-size:11.5px; color:var(--t3); line-height:1.8}
+.bkta{width:100%; height:110px; box-sizing:border-box; padding:9px; border-radius:9px;
+      border:1px solid rgba(255,255,255,.13); background:#141416; color:inherit;
+      font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:10.5px; line-height:1.5;
+      resize:none; -webkit-user-select:text; user-select:text}
+.bkmsg{margin:8px 0 0; font-size:11.5px; line-height:1.7}
+.bkmsg.ok{color:var(--ok)} .bkmsg.ng{color:var(--ng)}
 .danger{margin-top:22px; width:100%; min-height:44px; border-radius:11px; border:1px solid var(--ng);
         color:var(--ng); font-size:13px; display:flex; align-items:center; justify-content:center}
 .note{font-size:11px; color:var(--t3); line-height:1.8; margin-top:10px}
@@ -556,6 +572,7 @@ body.knows-write .void{opacity:0}
 
 <script src="./katex.min.js"></script>
 <script src="./tex.js"></script>
+<script src="./backup.js"></script>
 <script src="./data.js"></script>
 <script>
 "use strict";
@@ -764,6 +781,76 @@ let FAV = readJSON(K.fav, {});
 })();
 function saveST(){ writeJSON(stKey(), ST); }
 /* 共有の切り替え。どちらの記録もその場に残るので、何度でも行き来できる。 */
+
+/* =======================================================================
+   記録の持ち出し（画面まわり）
+   ======================================================================= */
+let bkFlash = null;      /* 取り込んだあと、描き直したさきで出す知らせ */
+function bkPanel(host){
+  host.innerHTML =
+    '<div class="bkrow">'+
+      '<button class="bkbtn" id="bkOut">書き出す</button>'+
+      '<button class="bkbtn" id="bkIn">読み込む</button>'+
+    '</div>'+
+    '<div class="bknote">記録はこの端末のブラウザの中にしかありません。'+
+      'アプリを入れ直したり、ブラウザのデータを消すと無くなります。'+
+      '書き出した文字列をメモなどに貼っておけば、あとで戻せます。</div>'+
+    '<div class="bkbox hide" id="bkBox"></div>'+
+    (bkFlash ? '<p class="bkmsg ok">'+bkFlash+'</p>' : '');
+  bkFlash = null;
+
+  const box = host.querySelector('#bkBox');
+
+  host.querySelector('#bkOut').addEventListener('click', ()=>{
+    const s = bkExport();
+    box.classList.remove('hide');
+    box.innerHTML =
+      '<p class="bkh">'+bkCount(s)+'問ぶんの記録です。全部コピーして、'+
+        'メモやメッセージに貼っておいてください。</p>'+
+      '<textarea class="bkta" id="bkTa" readonly></textarea>'+
+      '<div class="bkrow"><button class="bkbtn go" id="bkCopy">コピー</button>'+
+      '<button class="bkbtn" id="bkClose">とじる</button></div>';
+    const ta = box.querySelector('#bkTa');
+    ta.value = s;
+    box.querySelector('#bkCopy').addEventListener('click', ()=>{
+      ta.select(); ta.setSelectionRange(0, ta.value.length);
+      const done = ()=>{ box.querySelector('#bkCopy').textContent = 'コピーしました'; };
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(ta.value).then(done, ()=>{ try{ document.execCommand('copy'); done(); }catch(e){} });
+      }else{ try{ document.execCommand('copy'); done(); }catch(e){} }
+    });
+    box.querySelector('#bkClose').addEventListener('click', ()=>box.classList.add('hide'));
+  });
+
+  host.querySelector('#bkIn').addEventListener('click', ()=>{
+    box.classList.remove('hide');
+    box.innerHTML =
+      '<p class="bkh">書き出した文字列を貼りつけてください。'+
+        'いまの記録とつき合わせて、多いほうを残します（同じものを二度読み込んでも増えません）。</p>'+
+      '<textarea class="bkta" id="bkTa" placeholder="ここに貼りつけ"></textarea>'+
+      '<div class="bkrow"><button class="bkbtn go" id="bkGo">読み込む</button>'+
+      '<button class="bkbtn" id="bkClose">とじる</button></div>'+
+      '<p class="bkmsg" id="bkMsg"></p>';
+    box.querySelector('#bkClose').addEventListener('click', ()=>box.classList.add('hide'));
+    box.querySelector('#bkGo').addEventListener('click', ()=>{
+      const n = bkImport(box.querySelector('#bkTa').value);
+      const msg = box.querySelector('#bkMsg');
+      if(n === null){ msg.className = 'bkmsg ng'; msg.textContent = '読み込めませんでした。書き出した文字列を、切らずに全部貼りつけてください。'; return; }
+      /* このあと画面を描き直すので、知らせは次の描画で出す */
+      bkFlash = n + '問ぶんを取り込みました。';
+      bkAfterImport();
+    });
+  });
+}
+
+/* 取り込んだあとは、いまの記録で画面を描き直す */
+function bkAfterImport(){
+  ST  = readJSON(stKey(), {});
+  FAV = readJSON(K.fav, {});
+  renderStats();
+  buildTabs();
+  rebuild();
+}
 function setShare(on){
   SHARE = on;
   try{ localStorage.setItem(K.share, on?'1':'0'); }catch(e){}
@@ -1656,6 +1743,8 @@ function renderStats(){
   let otherN = 0;
   for(const k in other){ if(BYID[k] && ((other[k].c||0)+(other[k].w||0))>0) otherN++; }
 
+  h += '<div class="stsec">記録の持ち出し</div><div id="bkHost"></div>';
+
   h += '<div class="stsec">記録のつなぎ方</div>'+
        '<button class="swrow'+(SHARE?' on':'')+'" id="shareBtn">'+
          '<span class="nm">本編アプリと共有する<i>'+
@@ -1682,6 +1771,7 @@ function renderStats(){
        '</div>';
   h += '</div>';
   $('statBody').innerHTML = h;
+  bkPanel($('bkHost'));
   $('shareBtn').addEventListener('click', ()=>{ setShare(!SHARE); buzz(8); });
   $('wipe').addEventListener('click', ()=>{
     if(!confirm(SHARE ? '本編アプリと共通の記録をすべて消します。向こうの記録も消えます。よろしいですか？'
